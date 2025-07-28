@@ -325,7 +325,7 @@ export default function HomeScreen() {
   useEffect(() => {
     if (activeOrder) {
       Animated.spring(slideAnim, {
-        toValue: 0, 
+        toValue: 0,
         tension: 100,
         friction: 8,
         useNativeDriver: true,
@@ -367,9 +367,10 @@ export default function HomeScreen() {
       id: 1,
       name: "Kesar Meetha Paan",
       restaurant: "Laxmans",
-      price: "₹90",
+      price: "₹100",
       rating: 4.6,
       image: "https://t4.ftcdn.net/jpg/05/39/35/93/360_F_539359381_LQsJTRIswnrEEK4S9vpsITp3qA2gUD9e.jpg",
+      nav: 'paan'
     },
     {
       id: 2,
@@ -378,6 +379,7 @@ export default function HomeScreen() {
       price: "₹100",
       rating: 4.4,
       image: "https://www.cookwithmanali.com/wp-content/uploads/2022/03/Papdi-Chaat-676x1024.jpg",
+      nav: 'chaat'
     },
   ]
 
@@ -480,7 +482,7 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Popular in Laxman's</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {popularDishes.map((dish) => (
-              <TouchableOpacity key={dish.id} style={styles.dishCard}>
+              <TouchableOpacity key={dish.id} style={styles.dishCard} onPress={() => router.push(`/${dish.nav}` as any)}>
                 <Image source={{ uri: dish.image }} style={styles.dishImage} />
                 <View style={styles.dishInfo}>
                   <Text style={styles.dishName}>{dish.name}</Text>
