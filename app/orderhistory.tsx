@@ -4,6 +4,7 @@ import { collection, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { router } from 'expo-router';
+import { Linking } from 'react-native';
 import { ArrowLeft, Clock, CircleCheck as CheckCircle, Truck, ChefHat, Package, MapPin, Calendar, CreditCard } from 'lucide-react-native';
 
 interface CartItem {
@@ -42,7 +43,7 @@ const OrderHistory = () => {
           id: doc.id,
           ...(doc.data() as Omit<Order, 'id'>),
         }));
-        
+
         // Sort orders by date (newest first)
         orderList.sort((a, b) => b.createdAt?.toDate().getTime() - a.createdAt?.toDate().getTime());
         setOrders(orderList);
@@ -107,15 +108,15 @@ const OrderHistory = () => {
   const formatDate = (timestamp: Timestamp) => {
     const date = timestamp?.toDate();
     if (!date) return 'Unknown date';
-    
+
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 1) return 'Today';
     if (diffDays === 2) return 'Yesterday';
     if (diffDays <= 7) return `${diffDays - 1} days ago`;
-    
+
     return date.toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'short',
@@ -126,7 +127,7 @@ const OrderHistory = () => {
   const formatTime = (timestamp: Timestamp) => {
     const date = timestamp?.toDate();
     if (!date) return '';
-    
+
     return date.toLocaleTimeString('en-IN', {
       hour: '2-digit',
       minute: '2-digit',
@@ -166,7 +167,7 @@ const OrderHistory = () => {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-        
+
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -206,15 +207,15 @@ const OrderHistory = () => {
 
         {/* Status */}
         <TouchableOpacity onPress={() => router.push(`/orderdetails?orderId=${item.id}`)}>
-            <View style={[styles.statusContainer, { backgroundColor: statusInfo.bgColor }]}>
-          <StatusIcon size={20} color={statusInfo.color} />
-          <View style={styles.statusTextContainer}>
-            <Text style={[styles.statusText, { color: statusInfo.color }]}>
-              {statusInfo.text}
-            </Text>
-            <Text style={styles.statusDescription}>{statusInfo.description}</Text>
+          <View style={[styles.statusContainer, { backgroundColor: statusInfo.bgColor }]}>
+            <StatusIcon size={20} color={statusInfo.color} />
+            <View style={styles.statusTextContainer}>
+              <Text style={[styles.statusText, { color: statusInfo.color }]}>
+                {statusInfo.text}
+              </Text>
+              <Text style={styles.statusDescription}>{statusInfo.description}</Text>
+            </View>
           </View>
-        </View>
         </TouchableOpacity>
 
         {/* Order Details */}
@@ -225,7 +226,7 @@ const OrderHistory = () => {
               {formatDate(item.createdAt)} at {formatTime(item.createdAt)}
             </Text>
           </View>
-          
+
           <View style={styles.detailRow}>
             <Truck size={16} color="#666" />
             <Text style={styles.detailText}>{item.deliveryMethod || 'Home Delivery'}</Text>
@@ -236,8 +237,8 @@ const OrderHistory = () => {
             <Text style={styles.detailText}>Payment: </Text>
             <Text style={[
               styles.paymentStatus,
-              item.paymentStatus?.toLowerCase() === 'paid' 
-                ? styles.paymentPaid 
+              item.paymentStatus?.toLowerCase() === 'paid'
+                ? styles.paymentPaid
                 : styles.paymentPending
             ]}>
               {item.paymentStatus || 'Pending'}
@@ -264,7 +265,7 @@ const OrderHistory = () => {
               <Text style={styles.itemPrice}>₹{cartItem.price * cartItem.quantity}</Text>
             </View>
           ))}
-          
+
           {item.cartItems?.length > 3 && (
             <Text style={styles.moreItems}>
               +{item.cartItems.length - 3} more items
@@ -274,14 +275,28 @@ const OrderHistory = () => {
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.reorderButton} onPress={()=>router.push('/')}>
+          <TouchableOpacity style={styles.reorderButton} onPress={() => router.push('/')}>
             <Text style={styles.reorderButtonText}>Reorder</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.helpButton} onPress={()=>router.push('/')}>
+
+          <TouchableOpacity style={styles.helpButton} onPress={() => router.push('/')}>
             <Text style={styles.helpButtonText}>View Details</Text>
           </TouchableOpacity>
         </View>
+
+        {item.deliveryStatus.toLowerCase() === 'delivered' && (
+          <TouchableOpacity
+            style={styles.rateButton}
+            onPress={() => {
+              // Replace with your actual Google Maps or Business review link
+              const googleReviewLink = 'https://www.google.com/search?client=ms-android-motorola-rvo3&sca_esv=e948bafec9f39f8c&hl=en-IN&cs=1&si=AMgyJEtREmoPL4P1I5IDCfuA8gybfVI2d5Uj7QMwYCZHKDZ-E83EsvHTi5S9xnptOAwCO9Vqpt8xutW21f8meb9NRdRqBcsgP6AB5IRUYZ_fr9ZAJNYP5hize-wG57rn3NyJGvSCQnY5XnjzAKFhkDMh_1W_8d214Q3y5GQBLHd5zpGUuysqiB8%3D&q=Laxman%27s+%28The+Refreshment+Shop+%29,Pan+shop+Reviews&sa=X&ved=2ahUKEwiuxYir8uGOAxWVRWwGHUQLG20Q0bkNegQIJxAD&biw=1324&bih=760&dpr=2';
+              Linking.openURL(googleReviewLink);
+            }}
+          >
+            <Text style={styles.rateButtonText}>Rate Us on Google</Text>
+          </TouchableOpacity>
+        )}
+
       </View>
     );
   };
@@ -289,7 +304,7 @@ const OrderHistory = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -340,6 +355,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  rateButton: {
+    backgroundColor: '#0F9D58', // Google green
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  rateButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
   placeholder: {
     width: 34,
   },

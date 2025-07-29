@@ -24,41 +24,41 @@ export default function ProfileScreen() {
         avgRating: 4.8,
     };
 
-    const recentOrders = [
-        {
-            id: 1,
-            restaurant: 'Bella Italia',
-            items: 'Margherita Pizza, Garlic Bread',
-            date: '2 days ago',
-            amount: 450,
-            status: 'Delivered',
-        },
-        {
-            id: 2,
-            restaurant: 'Spice Garden',
-            items: 'Chicken Biryani, Raita',
-            date: '5 days ago',
-            amount: 380,
-            status: 'Delivered',
-        },
-        {
-            id: 3,
-            restaurant: 'Burger House',
-            items: 'Classic Burger, Fries',
-            date: '1 week ago',
-            amount: 320,
-            status: 'Delivered',
-        },
-    ];
+    // const recentOrders = [
+    //     {
+    //         id: 1,
+    //         restaurant: 'Bella Italia',
+    //         items: 'Margherita Pizza, Garlic Bread',
+    //         date: '2 days ago',
+    //         amount: 450,
+    //         status: 'Delivered',
+    //     },
+    //     {
+    //         id: 2,
+    //         restaurant: 'Spice Garden',
+    //         items: 'Chicken Biryani, Raita',
+    //         date: '5 days ago',
+    //         amount: 380,
+    //         status: 'Delivered',
+    //     },
+    //     {
+    //         id: 3,
+    //         restaurant: 'Burger House',
+    //         items: 'Classic Burger, Fries',
+    //         date: '1 week ago',
+    //         amount: 320,
+    //         status: 'Delivered',
+    //     },
+    // ];
 
     const menuItems = [
         { icon: ShoppingBag, title: 'My Orders', subtitle: 'View order history', onPress: () => { router.push('/orderhistory'); } },
         {
             icon: Heart,
-            title: user?.role === 'admin' ? 'Dashboard' : 'Favorites',
-            subtitle: user?.role === 'admin' ? 'Admin dashboard access' : 'Your favorite restaurants',
+            title: user?.role === 'admin' ? 'Dashboard' : 'About Us',
+            subtitle: user?.role === 'admin' ? 'Admin dashboard access' : 'About us section',
             onPress: () => {
-                router.push(user?.role === 'admin' ? '/admin' : '/');
+                router.push(user?.role === 'admin' ? '/admin' : '/aboutus');
             }
         },
 

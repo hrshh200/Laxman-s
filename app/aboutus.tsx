@@ -5,6 +5,8 @@ import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
+import { WebView } from 'react-native-webview'; // At the top with other imports
+
 
 const AboutUs = () => {
     const handleCall = () => {
@@ -12,8 +14,11 @@ const AboutUs = () => {
     };
 
     const handleDirections = () => {
-        Linking.openURL('https://www.google.com/maps/place/Kolkata');
+        const shopName = "Laxman's Paan Shop";
+        const encodedShopName = encodeURIComponent("Laxman's (The Refreshment Shop ),Pan shop");
+        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodedShopName}`);
     };
+
 
     // const stats = [
     //     { icon: Users, label: 'Happy Customers', value: '50K+' },
@@ -83,7 +88,7 @@ const AboutUs = () => {
                     />
                     <View style={styles.heroOverlay}>
                         <Text style={styles.heroTitle}>Laxman's</Text>
-                        <Text style={styles.heroSubtitle}>Delivering Happiness Since 2019</Text>
+                        <Text style={styles.heroSubtitle}>Delivering Happiness Since 1976</Text>
                     </View>
                 </View>
 
@@ -127,7 +132,7 @@ const AboutUs = () => {
                             </View>
                             <View style={styles.contactInfo}>
                                 <Text style={styles.contactLabel}>Call Us</Text>
-                                <Text style={styles.contactValue}>+91 91234 56789</Text>
+                                <Text style={styles.contactValue}>+91 8017644259</Text>
                             </View>
                         </TouchableOpacity>
 
@@ -135,7 +140,7 @@ const AboutUs = () => {
                             <Text style={styles.sectionTitle}>Directions</Text>
                             <TouchableOpacity onPress={handleDirections} style={styles.contactRow}>
                                 <Ionicons name="navigate" size={20} color="green" />
-                                <Text style={styles.contactText}>Elgin Road, Kolkata</Text>
+                                <Text style={styles.contactText}>View Our Shop</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -143,9 +148,22 @@ const AboutUs = () => {
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Location</Text>
                             <MapView style={styles.map} initialRegion={shopLocation}>
-                                <Marker coordinate={shopLocation} title="UrbanCare Shop" description="Elgin Road, Kolkata" />
+                                <Marker coordinate={shopLocation} title="Laxman's (The Refreshment Shop ),Pan shop" description="Elgin Road, Kolkata" />
                             </MapView>
                         </View>
+
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Our Achievements</Text>
+                            <View style={styles.videoContainer}>
+                                <WebView
+                                    style={styles.video}
+                                    javaScriptEnabled={true}
+                                    domStorageEnabled={true}
+                                    source={{ uri: 'https://www.youtube.com/embed/oHEo5Bkw2dk' }}
+                                />
+                            </View>
+                        </View>
+
 
                         {/*Just kolkata as location */}
 
@@ -264,6 +282,16 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
     },
+    videoContainer: {
+        height: 200,
+        width: '100%',
+        overflow: 'hidden',
+        borderRadius: 10,
+    },
+    video: {
+        flex: 1,
+    },
+
     backButton: {
         padding: 5,
     },

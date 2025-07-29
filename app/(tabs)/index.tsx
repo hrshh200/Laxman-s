@@ -358,7 +358,7 @@ export default function HomeScreen() {
       name: "Others",
       image:
         "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", // salad/street food
-      nav: "beverages",
+      nav: "",
     },
   ]
 

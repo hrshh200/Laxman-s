@@ -33,32 +33,41 @@ const Search: React.FC = () => {
   const favorites = ['paan', 'chaat', 'beverages'];
 
   const handleSearch = async (text: string) => {
-    setSearchQuery(text);
+  setSearchQuery(text);
 
-    if (text.trim() === '') {
-      setResults([]);
-      return;
-    }
+  if (text.trim() === '') {
+    setResults([]);
+    return;
+  }
 
-    const collections = ['paan', 'chaat', 'beverages'];
-    const allResults: FoodItem[] = [];
+  const collections = ['paan', 'chaat', 'beverages'];
+  const allResults: FoodItem[] = [];
 
-    for (const col of collections) {
-      const ref = collection(db, col);
-      const q = query(ref, where('name', '>=', text), where('name', '<=', text + '\uf8ff'));
-      const snapshot = await getDocs(q);
+  for (const col of collections) {
+    const ref = collection(db, col);
+    const snapshot = await getDocs(ref);
 
-      const items = snapshot.docs.map(doc => ({
+    // First map and cast to FoodItem[]
+    const items = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
         id: doc.id,
         category: col,
-        ...doc.data(),
-      })) as FoodItem[];
+        ...data,
+      } as FoodItem;
+    });
 
-      allResults.push(...items);
-    }
+    // Then safely filter using full type
+    const filtered = items.filter(item =>
+      item.name?.toLowerCase().includes(text.toLowerCase())
+    );
 
-    setResults(allResults);
-  };
+    allResults.push(...filtered);
+  }
+
+  setResults(allResults);
+};
+
 
   const handleFavoritePress = (favorite: string) => {
     handleSearch(favorite);

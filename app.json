@@ -1,30 +1,34 @@
 {
   "expo": {
-    "name": "",
-    "slug": "laxman",
+    "name": "Laxman's",
+    "slug": "Laxman's",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "backgroundColor":"#FFFFFF",
+    "backgroundColor": "#FFFFFF",
     "scheme": "laxman",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "splash":{
-      "image" : "./assets/images/splash.png",
-      "resizeMode" : "contain",
-      "backgroundColor": "#00A651" 
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#00A651"
     },
     "ios": {
-       "adaptiveIcon":{
-        "foregroundImage" : "./assets/images/adaptive-icon.png",
-        "backgroundColor" : "#FFFFFF"
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
       },
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.harsh.laxmanapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
-      "adaptiveIcon":{
-        "foregroundImage" : "./assets/images/adaptive-icon.png",
-        "backgroundColor" : "#FFFFFF"
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.harsh.laxmanapp"
@@ -34,10 +38,14 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-    ],
+    "plugins": [],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "336191be-1011-40d4-bd9f-9c0b098b8504"
+      }
     }
   }
 }
