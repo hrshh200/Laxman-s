@@ -82,7 +82,7 @@ export default function Chaat() {
                                         <Text style={styles.itemDescription}>{item.description}</Text>
                                     </View>
 
-                                    <Text style={styles.itemPrice}>{item.price}</Text>
+                                    <Text style={styles.itemPrice}>₹{item.price}</Text>
 
                                     <Text style={styles.fullDescription}>{item.fulldescription}</Text>
 

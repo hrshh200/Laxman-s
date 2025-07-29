@@ -247,15 +247,15 @@ const OrderDetails = () => {
         </View>
         <Text style={styles.readyTitle}>Your Order is Ready!</Text>
         <Text style={styles.readySubtitle}>
-          Your delicious food is packed and ready for delivery
+          Your delicious food is packed and ready!
         </Text>
         
-        <View style={styles.readyActions}>
+        {/* <View style={styles.readyActions}>
           <TouchableOpacity style={styles.trackButton}>
             <Navigation size={20} color="#fff" />
             <Text style={styles.trackButtonText}>Track Delivery</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
     </View>
   );
@@ -279,15 +279,15 @@ const OrderDetails = () => {
             </Text>
           </View>
           
-          <View style={styles.deliveredRow}>
+          {/* <View style={styles.deliveredRow}>
             <Clock size={16} color="#666" />
             <Text style={styles.deliveredText}>
               At {order?.deliveryTime || formatTime(order?.createdAt)}
             </Text>
-          </View>
+          </View> */}
         </View>
 
-        <View style={styles.ratingSection}>
+        {/* <View style={styles.ratingSection}>
           <Text style={styles.ratingTitle}>Rate your experience</Text>
           <View style={styles.starsContainer}>
             {[1, 2, 3, 4, 5].map((star) => (
@@ -296,11 +296,11 @@ const OrderDetails = () => {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </View> */}
 
-        <TouchableOpacity style={styles.reorderButton} onPress={()=>router.push('/')}>
+        {/* <TouchableOpacity style={styles.reorderButton} onPress={()=>router.push('/')}>
           <Text style={styles.reorderButtonText}>Reorder</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

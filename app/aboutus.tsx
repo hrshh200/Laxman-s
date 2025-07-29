@@ -15,33 +15,33 @@ const AboutUs = () => {
         Linking.openURL('https://www.google.com/maps/place/Kolkata');
     };
 
-    const stats = [
-        { icon: Users, label: 'Happy Customers', value: '50K+' },
-        { icon: Award, label: 'Years of Service', value: '5+' },
-        { icon: Heart, label: 'Dishes Served', value: '1M+' },
-        { icon: Clock, label: 'Avg Delivery', value: '30 min' },
-    ];
+    // const stats = [
+    //     { icon: Users, label: 'Happy Customers', value: '50K+' },
+    //     { icon: Award, label: 'Years of Service', value: '5+' },
+    //     { icon: Heart, label: 'Dishes Served', value: '1M+' },
+    //     { icon: Clock, label: 'Avg Delivery', value: '30 min' },
+    // ];
 
-    const reviews = [
-        {
-            name: 'Priya Sharma',
-            rating: 5,
-            comment: 'Amazing food quality and super fast delivery! The biryani was absolutely delicious.',
-            avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
-        },
-        {
-            name: 'Rahul Kumar',
-            rating: 5,
-            comment: 'Best food delivery app in the city. Great variety and excellent customer service.',
-            avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
-        },
-        {
-            name: 'Anjali Das',
-            rating: 4,
-            comment: 'Love the user interface and the food quality is consistently good.',
-            avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
-        },
-    ];
+    // const reviews = [
+    //     {
+    //         name: 'Priya Sharma',
+    //         rating: 5,
+    //         comment: 'Amazing food quality and super fast delivery! The biryani was absolutely delicious.',
+    //         avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
+    //     },
+    //     {
+    //         name: 'Rahul Kumar',
+    //         rating: 5,
+    //         comment: 'Best food delivery app in the city. Great variety and excellent customer service.',
+    //         avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
+    //     },
+    //     {
+    //         name: 'Anjali Das',
+    //         rating: 4,
+    //         comment: 'Love the user interface and the food quality is consistently good.',
+    //         avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
+    //     },
+    // ];
 
     const renderStars = (rating: number) => {
         return Array.from({ length: 5 }, (_, index) => (
@@ -78,7 +78,7 @@ const AboutUs = () => {
                 {/* Hero Section */}
                 <View style={styles.heroSection}>
                     <Image
-                        source={{ uri: 'https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop' }}
+                        source={{ uri: 'https://b.zmtcdn.com/data/pictures/chains/9/18420449/d970f5819a23bb3e29008080171f3215.jpg' }}
                         style={styles.heroImage}
                     />
                     <View style={styles.heroOverlay}>

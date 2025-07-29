@@ -4,15 +4,28 @@
     "slug": "laxman",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/splash.png",
-    "backgroundColor":"#00C853",
+    "icon": "./assets/images/icon.png",
+    "backgroundColor":"#FFFFFF",
     "scheme": "laxman",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash":{
+      "image" : "./assets/images/splash.png",
+      "resizeMode" : "contain",
+      "backgroundColor": "#00A651" 
+    },
     "ios": {
+       "adaptiveIcon":{
+        "foregroundImage" : "./assets/images/adaptive-icon.png",
+        "backgroundColor" : "#FFFFFF"
+      },
       "supportsTablet": true
     },
     "android": {
+      "adaptiveIcon":{
+        "foregroundImage" : "./assets/images/adaptive-icon.png",
+        "backgroundColor" : "#FFFFFF"
+      },
       "edgeToEdgeEnabled": true,
       "package": "com.harsh.laxmanapp"
     },
@@ -22,16 +35,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen", 
-        {
-          "image": "./assets/images/splash.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#FFFFFF"
-        }
-      ],
-      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
