@@ -21,6 +21,20 @@ export default function Chaat() {
     const [chaatCategories, setChaatCategories] = useState<ChaatItem[]>([]);
     const { user, logout } = useAuth();
 
+
+    const isChaatAvailableNow = () => {
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        const startMinutes = 13 * 60; // 1:00 PM
+        const endMinutes = 24 * 60;   // 12:00 AM midnight
+
+        return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+    };
+
+
+    const [isAvailableNow, setIsAvailableNow] = useState(isChaatAvailableNow());
+
     const handleAddToCart = (item: ChaatItem) => {
         router.push({
             pathname: '/orderinstructions',
@@ -48,6 +62,15 @@ export default function Chaat() {
         };
 
         fetchChaatData();
+    }, []);
+
+    //Checking the time after every minute, without refresing the page
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIsAvailableNow(isChaatAvailableNow());
+        }, 60000); // check every minute
+
+        return () => clearInterval(interval);
     }, []);
 
 
@@ -87,17 +110,24 @@ export default function Chaat() {
                                     <Text style={styles.fullDescription}>{item.fulldescription}</Text>
 
                                     {user ? (
-                                        <TouchableOpacity
-                                            style={styles.addButton}
-                                            onPress={() => handleAddToCart(item)}
-                                        >
-                                            <Text style={styles.addButtonText}>ADD TO CART</Text>
-                                        </TouchableOpacity>
+                                        isChaatAvailableNow() ? (
+                                            <TouchableOpacity
+                                                style={styles.addButton}
+                                                onPress={() => handleAddToCart(item)}
+                                            >
+                                                <Text style={styles.addButtonText}>ADD TO CART</Text>
+                                            </TouchableOpacity>
+                                        ) : (
+                                            <View style={styles.disabledButton}>
+                                                <Text style={styles.disabledButtonText}>Available 1PM onwards</Text>
+                                            </View>
+                                        )
                                     ) : (
                                         <View style={styles.disabledButton}>
                                             <Text style={styles.disabledButtonText}>LOGIN TO ADD</Text>
                                         </View>
                                     )}
+
                                 </View>
 
                                 <View style={styles.itemRight}>

@@ -59,6 +59,15 @@ const OrderHistory = () => {
 
   const getStatusInfo = (status: string) => {
     switch (status.toLowerCase()) {
+      case 'Waiting for your order to accept':
+      case 'waitingtoaccept':
+        return {
+          icon: Package,
+          color: '#e74c3c',
+          bgColor: '#E3F2FD',
+          text: 'Waiting for confirmation',
+          description: ' Confirmation Status Pending'
+        };
       case 'order placed':
       case 'orderplaced':
         return {
@@ -293,7 +302,7 @@ const OrderHistory = () => {
               Linking.openURL(googleReviewLink);
             }}
           >
-            <Text style={styles.rateButtonText}>Rate Us on Google</Text>
+            <Text style={styles.rateButtonText}>Please Rate Us on Google</Text>
           </TouchableOpacity>
         )}
 

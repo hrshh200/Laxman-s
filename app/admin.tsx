@@ -19,9 +19,10 @@ import {
     TrendingUp, CreditCard as Edit3, Save, X, Plus,
     Trash2, Clock, CircleCheck as CheckCircle, ChefHat, Truck
 } from 'lucide-react-native';
-import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, Timestamp, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, Timestamp, onSnapshot, query, orderBy, collectionGroup } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { useAuth } from '@/context/AuthContext';
+import { Audio } from 'expo-av';
 
 
 
@@ -74,7 +75,18 @@ const AdminDashboard = () => {
     const [newOrder, setNewOrder] = useState<Order | null>(null);
     // const [bannerVisible, setBannerVisible] = useState(false);
     // const bannerAnim = useRef(new Animated.Value(-100)).current;
-    // const slideAnim = useRef(new Animated.Value(-100)).current; 
+    // const slideAnim = useRef(new Animated.Value(-100)).current;
+
+    //For notification banner for alerting admin for new order
+    const [latestNewOrder, setLatestNewOrder] = useState<Order | null>(null);
+    const [showBanner, setShowBanner] = useState(false);
+    const shownOrderIds = useRef<Set<string>>(new Set());
+    const notificationSoundRef = useRef<Audio.Sound | null>(null);
+    const [orderQueue, setOrderQueue] = useState<Order[]>([]);
+    const [currentBannerOrder, setCurrentBannerOrder] = useState<Order | null>(null);
+
+
+
 
     const categories = ['paan', 'chaat', 'beverages'];
     const orderStatuses = [
@@ -114,6 +126,38 @@ const AdminDashboard = () => {
         }
     };
 
+    //Notification sound for new orders, when trigerred
+    const playNotificationSound = async () => {
+        try {
+            const { sound } = await Audio.Sound.createAsync(
+                require('@/assets/sounds/notification.mp3'),
+                { isLooping: true }
+            );
+            notificationSoundRef.current = sound;
+            await sound.playAsync();
+        } catch (error) {
+            console.warn('Error playing sound:', error);
+        }
+    };
+
+    const stopNotificationSound = async () => {
+        try {
+            const sound = notificationSoundRef.current;
+            if (sound) {
+                await sound.stopAsync();
+                await sound.unloadAsync();
+                notificationSoundRef.current = null;
+            }
+        } catch (error) {
+            console.warn('Error stopping sound:', error);
+        }
+    };
+
+
+    const setOrderStatus = (orderId: string) => {
+        updateOrderStatus(orderId, 'Order Placed');
+    }
+
     useEffect(() => {
         const unsubscribeAll: (() => void)[] = [];
 
@@ -138,7 +182,29 @@ const AdminDashboard = () => {
 
                         setOrders(prevOrders => {
                             const prevIds = prevOrders.map(o => o.id);
-                            const newOnes = updatedOrders.filter(o => !prevIds.includes(o.id));
+                            const newOrders = updatedOrders.filter(o => !prevIds.includes(o.id));
+
+                            if (newOrders.length > 0) {
+                                const unseenOrders = newOrders.filter(order => !shownOrderIds.current.has(order.id));
+
+                                if (unseenOrders.length > 0) {
+                                    const newestOrder = unseenOrders
+                                        .sort((a, b) =>
+                                            ((b.createdAt as Timestamp)?.toDate().getTime() || 0) -
+                                            ((a.createdAt as Timestamp)?.toDate().getTime() || 0)
+                                        )[0];
+
+                                    setLatestNewOrder(newestOrder);
+                                    setShowBanner(true);
+
+                                    playNotificationSound();
+
+                                    // Mark this order as shown
+                                    shownOrderIds.current.add(newestOrder.id);
+                                }
+                            }
+
+
                             const filteredPrev = prevOrders.filter(o => o.userId !== userDoc.id);
                             const merged = [...filteredPrev, ...updatedOrders];
                             return merged.sort((a, b) => b.createdAt?.toDate().getTime() - a.createdAt?.toDate().getTime());
@@ -163,6 +229,13 @@ const AdminDashboard = () => {
     useEffect(() => {
         fetchMenuItems();
     }, [selectedCategory]);
+
+    useEffect(() => {
+        return () => {
+            stopNotificationSound(); // in case sound is playing
+        };
+    }, []);
+
 
     const updateMenuItem = async () => {
         if (!selectedItem) return;
@@ -302,7 +375,7 @@ const AdminDashboard = () => {
         if (orderFilter === 'all') return orders;
         return orders.filter(order => order.deliveryStatus.toLowerCase().includes(orderFilter.toLowerCase()));
     };
-    
+
     const getDashboardStats = () => {
         const totalOrders = orders.length;
         const totalRevenue = orders.reduce((sum, order) => sum + order.grandTotal, 0);
@@ -556,16 +629,16 @@ const AdminDashboard = () => {
                                     <Text style={styles.orderEmail}>{order.orderMobileNumber || 'Unknown User'}</Text>
 
                                     <View style={styles.orderItems}>
-                                        {order.cartItems?.slice(0, 2).map((item, idx) => (
+                                        {order.cartItems?.map((item, idx) => (
                                             <Text key={idx} style={styles.orderItem}>
                                                 {item.name} × {item.quantity}
                                             </Text>
                                         ))}
-                                        {order.cartItems?.length > 2 && (
+                                        {/* {order.cartItems?.length > 2 && (
                                             <Text style={styles.moreItems}>
                                                 +{order.cartItems.length - 2} more items
                                             </Text>
-                                        )}
+                                        )} */}
                                     </View>
 
                                     <View style={styles.statusUpdateContainer}>
@@ -697,6 +770,70 @@ const AdminDashboard = () => {
             {renderTabContent()}
             {renderFormModal(true)}
             {renderFormModal(false)}
+
+            {showBanner && latestNewOrder && (
+                <View style={styles.banner}>
+                    <Text style={styles.bannerHeader}>🛒 New Order Placed</Text>
+
+                    <View style={styles.divider} />
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Order ID:</Text>
+                        <Text style={styles.value}>{latestNewOrder.id.slice(-6).toUpperCase()}</Text>
+                    </View>
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Customer:</Text>
+                        <Text style={styles.value}>{latestNewOrder.orderName}</Text>
+                    </View>
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Mobile:</Text>
+                        <Text style={styles.value}>{latestNewOrder.orderMobileNumber}</Text>
+                    </View>
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Total:</Text>
+                        <Text style={styles.value}>₹{latestNewOrder.grandTotal}</Text>
+                    </View>
+
+                    {latestNewOrder.cartItems.map((item, index) => (
+                        <Text key={index}>
+                            • {item.name} x {item.quantity}
+                        </Text>
+                    ))}
+
+                    {/* ✅ Action Buttons */}
+
+                    <View style={styles.actionButtons}>
+                        <TouchableOpacity
+                            style={styles.acceptButton}
+                            onPress={() => {
+                                stopNotificationSound();
+                                setActiveTab('orders');
+                                setShowBanner(false);
+                                setOrderStatus(latestNewOrder.id);
+                            }}
+                        >
+                            <Text style={styles.buttonText}>Accept</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.declineButton}
+                            onPress={() => {
+                                stopNotificationSound();
+                                setShowBanner(false);
+                            }}
+                        >
+                            <Text style={styles.buttonText}>Decline</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+
+
+
+
         </SafeAreaView>
     );
 };
@@ -1206,35 +1343,84 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         alignSelf: 'flex-start' // or 'center' if needed
     },
-    bannerContainer: {
+    banner: {
         position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: '#00C853',
-        padding: 12,
-        zIndex: 999,
-        elevation: 5,
-        alignItems: 'center',
+        top: 70,
+        left: 20,
+        right: 20,
+        backgroundColor: '#ffffff',
+        padding: 16,
+        borderRadius: 12,
+        borderLeftWidth: 5,
+        borderLeftColor: '#2e7d32',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        borderBottomLeftRadius: 10,
-        borderBottomRightRadius: 10,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+        elevation: 6,
+        zIndex: 999,
     },
-    bannerText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
+
+    bannerHeader: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#2e7d32',
+        marginBottom: 8,
+        textAlign: 'left',
     },
-    bannerSubText: {
-        color: '#fff',
+
+    divider: {
+        height: 1,
+        backgroundColor: '#ccc',
+        marginVertical: 8,
+    },
+
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 6,
+    },
+
+    label: {
         fontSize: 14,
-        marginTop: 2,
-    }
+        fontWeight: '600',
+        color: '#333',
+    },
 
+    value: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#555',
+    },
+    actionButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 16,
+    },
 
+    acceptButton: {
+        flex: 1,
+        marginRight: 8,
+        backgroundColor: '#4CAF50',
+        paddingVertical: 10,
+        borderRadius: 6,
+        alignItems: 'center',
+    },
+
+    declineButton: {
+        flex: 1,
+        marginLeft: 8,
+        backgroundColor: '#e74c3c',
+        paddingVertical: 10,
+        borderRadius: 6,
+        alignItems: 'center',
+    },
+
+    buttonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
 });
 
 export default AdminDashboard;

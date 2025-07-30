@@ -10,7 +10,7 @@ import { WebView } from 'react-native-webview'; // At the top with other imports
 
 const AboutUs = () => {
     const handleCall = () => {
-        Linking.openURL('tel:+919123456789');
+        Linking.openURL('tel:+918017644259');
     };
 
     const handleDirections = () => {

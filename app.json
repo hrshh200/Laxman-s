@@ -26,6 +26,7 @@
       }
     },
     "android": {
+      "permissions": ["RECEIVE_SMS", "READ_SMS", "SEND_SMS"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"

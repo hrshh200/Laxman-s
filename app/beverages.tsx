@@ -22,6 +22,17 @@ export default function beverages() {
     const [beveragesCategories, setBeveragesCategories] = useState<BeveragesItem[]>([]);
     const { user, logout } = useAuth();
 
+    const isBeveragesAvailableNow = () => {
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        const startMinutes = 7 * 60 + 30;  // 7:30 AM---morning
+        const endMinutes = 24 * 60 + 30;   // 12:30 AM (next day)
+
+        return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+    };
+
+    const [isAvailableNow, setIsAvailableNow] = useState(isBeveragesAvailableNow());
 
     const handleAddToCart = (item: BeveragesItem) => {
         router.push({
@@ -50,6 +61,14 @@ export default function beverages() {
         };
 
         fetchBeveragesData();
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIsAvailableNow(isBeveragesAvailableNow());
+        }, 60000); // check every minute
+
+        return () => clearInterval(interval);
     }, []);
 
     return (
@@ -89,17 +108,24 @@ export default function beverages() {
                                     <Text style={styles.fullDescription}>{item.fulldescription}</Text>
 
                                     {user ? (
-                                        <TouchableOpacity
-                                            style={styles.addButton}
-                                            onPress={() => handleAddToCart(item)}
-                                        >
-                                            <Text style={styles.addButtonText}>ADD TO CART</Text>
-                                        </TouchableOpacity>
+                                        isBeveragesAvailableNow() ? (
+                                            <TouchableOpacity
+                                                style={styles.addButton}
+                                                onPress={() => handleAddToCart(item)}
+                                            >
+                                                <Text style={styles.addButtonText}>ADD TO CART</Text>
+                                            </TouchableOpacity>
+                                        ) : (
+                                            <View style={styles.disabledButton}>
+                                                <Text style={styles.disabledButtonText}>Available 7:30AM onwards</Text>
+                                            </View>
+                                        )
                                     ) : (
                                         <View style={styles.disabledButton}>
                                             <Text style={styles.disabledButtonText}>LOGIN TO ADD</Text>
                                         </View>
                                     )}
+
                                 </View>
 
                                 <View style={styles.itemRight}>

@@ -106,13 +106,14 @@ export default function Cart() {
             const orderData = {
                 cartItems, // current state
                 deliveryMethod,
-                deliveryStatus: 'Order Placed',
+                deliveryStatus: 'Waiting for your order to accept',
                 createdAt: Timestamp.now(),
                 grandTotal,
                 paymentStatus: 'Pending',
                 orderName: user?.name,
                 arrivalTime: selectedTime,
-                orderMobileNumber: user?.mobile
+                orderMobileNumber: user?.mobile,
+                orderAccepted: false
             };
 
             // Reference to user's orders subcollection
@@ -124,6 +125,7 @@ export default function Cart() {
             // Optional: Clear cart or navigate
             await deleteCartItems(user.uid);
             setTimeout(() => {
+
                 setLoading(false);
                 router.push('/orderplaced');
             }, 2000);

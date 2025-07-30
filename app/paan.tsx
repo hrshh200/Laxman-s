@@ -22,6 +22,18 @@ export default function Paan() {
     const [paanCategories, setPaanCategories] = useState<PaanItem[]>([]);
     const { user, logout } = useAuth();
 
+    const isPaanAvailableNow = () => {
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        const startMinutes = 7 * 60 + 30;  // 7:30 AM---morning
+        const endMinutes = 24 * 60 + 30;   // 12:30 AM (next day)
+
+        return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+    };
+
+    const [isAvailableNow, setIsAvailableNow] = useState(isPaanAvailableNow());
+
     const handleAddToCart = (item: PaanItem) => {
         router.push({
             pathname: '/orderinstructions',
@@ -48,6 +60,14 @@ export default function Paan() {
         };
 
         fetchPaanData();
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIsAvailableNow(isPaanAvailableNow());
+        }, 60000); // check every minute
+
+        return () => clearInterval(interval);
     }, []);
 
     return (
@@ -87,12 +107,18 @@ export default function Paan() {
                                     <Text style={styles.fullDescription}>{item.fulldescription}</Text>
 
                                     {user ? (
-                                        <TouchableOpacity
-                                            style={styles.addButton}
-                                            onPress={() => handleAddToCart(item)}
-                                        >
-                                            <Text style={styles.addButtonText}>ADD TO CART</Text>
-                                        </TouchableOpacity>
+                                        isPaanAvailableNow() ? (
+                                            <TouchableOpacity
+                                                style={styles.addButton}
+                                                onPress={() => handleAddToCart(item)}
+                                            >
+                                                <Text style={styles.addButtonText}>ADD TO CART</Text>
+                                            </TouchableOpacity>
+                                        ) : (
+                                            <View style={styles.disabledButton}>
+                                                <Text style={styles.disabledButtonText}>Available 7:30AM onwards</Text>
+                                            </View>
+                                        )
                                     ) : (
                                         <View style={styles.disabledButton}>
                                             <Text style={styles.disabledButtonText}>LOGIN TO ADD</Text>
