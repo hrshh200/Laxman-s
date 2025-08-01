@@ -1,51 +1,68 @@
 {
   "expo": {
     "name": "Laxman's",
-    "slug": "Laxman's",
+    "owner": "harshsharma0881",
+    "slug": "laxmans",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "backgroundColor": "#FFFFFF",
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "scheme": "laxman",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#00A651"
     },
-    "ios": {
+    "android": {
+      "package": "com.harsh.laxmanapp",
+      "googleServicesFile": "./android/app/google-services.json",
+      "permissions": [
+        "RECEIVE_SMS",
+        "READ_SMS",
+        "SEND_SMS",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "supportsTablet": true,
+      "edgeToEdgeEnabled": true
+    },
+    "ios": {
       "bundleIdentifier": "com.harsh.laxmanapp",
+      "googleServicesFile": "./ios/LaxmanApp/GoogleService-Info.plist",
+      "supportsTablet": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
-    },
-    "android": {
-      "permissions": ["RECEIVE_SMS", "READ_SMS", "SEND_SMS"],
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.harsh.laxmanapp"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [],
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      "expo-location",
+      "expo-web-browser"
+    ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "eas": {
-        "projectId": "336191be-1011-40d4-bd9f-9c0b098b8504"
+        "projectId": "b321ab07-d83c-4fbc-8e8f-f1d0fdf5744a"
       }
     }
   }

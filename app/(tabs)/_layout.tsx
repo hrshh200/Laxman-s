@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons'; 
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
@@ -7,11 +7,20 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
+          position: 'absolute',          // 👈 Allow absolute positioning
+          bottom: 30,                    // 👈 Moves tab bar up from the bottom
+          left: 20,                      // 👈 Optional side spacing
+          right: 20,
           backgroundColor: '#fff',
-          borderTopWidth: 1,
-          borderTopColor: '#f0f0f0',
+          borderRadius: 16,              // 👈 Rounded corners
           height: 60,
-          paddingBottom: 5,
+          paddingBottom: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 5,                  // 👈 Android shadow
+          borderTopWidth: 0,            // 👈 Hide top border for floating effect
         },
         tabBarActiveTintColor: '#e74c3c',
         tabBarInactiveTintColor: '#999',

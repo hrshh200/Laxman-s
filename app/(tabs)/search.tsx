@@ -13,6 +13,7 @@ import {
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { router } from 'expo-router';
+import { ArrowLeft } from 'lucide-react-native';
 
 interface FoodItem {
   id: string;
@@ -33,40 +34,40 @@ const Search: React.FC = () => {
   const favorites = ['paan', 'chaat', 'beverages'];
 
   const handleSearch = async (text: string) => {
-  setSearchQuery(text);
+    setSearchQuery(text);
 
-  if (text.trim() === '') {
-    setResults([]);
-    return;
-  }
+    if (text.trim() === '') {
+      setResults([]);
+      return;
+    }
 
-  const collections = ['paan', 'chaat', 'beverages'];
-  const allResults: FoodItem[] = [];
+    const collections = ['paan', 'chaat', 'beverages'];
+    const allResults: FoodItem[] = [];
 
-  for (const col of collections) {
-    const ref = collection(db, col);
-    const snapshot = await getDocs(ref);
+    for (const col of collections) {
+      const ref = collection(db, col);
+      const snapshot = await getDocs(ref);
 
-    // First map and cast to FoodItem[]
-    const items = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        category: col,
-        ...data,
-      } as FoodItem;
-    });
+      // First map and cast to FoodItem[]
+      const items = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          category: col,
+          ...data,
+        } as FoodItem;
+      });
 
-    // Then safely filter using full type
-    const filtered = items.filter(item =>
-      item.name?.toLowerCase().includes(text.toLowerCase())
-    );
+      // Then safely filter using full type
+      const filtered = items.filter(item =>
+        item.name?.toLowerCase().includes(text.toLowerCase())
+      );
 
-    allResults.push(...filtered);
-  }
+      allResults.push(...filtered);
+    }
 
-  setResults(allResults);
-};
+    setResults(allResults);
+  };
 
 
   const handleFavoritePress = (favorite: string) => {
@@ -79,24 +80,28 @@ const Search: React.FC = () => {
   };
 
   const handleAddToCart = (item: FoodItem) => {
-          router.push({
-              pathname: '/orderinstructions',
-              params: {
-                  id: item.id,
-                  name: item.name,
-                  description: item.description,
-                  fulldescription: item.fulldescription,
-                  price: item.price.toString(), // pass as string
-                  image: item.image,
-                  isVeg: item.isVeg ? '1' : '0', // convert boolean
-              }
-          });
-      };
+    router.push({
+      pathname: '/orderinstructions',
+      params: {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        fulldescription: item.fulldescription,
+        price: item.price.toString(), // pass as string
+        image: item.image,
+        isVeg: item.isVeg ? '1' : '0', // convert boolean
+      }
+    });
+  };
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.searchContainer}>
-        <Text style={styles.headerText}>Search Laxman's Menu</Text>
-
+        <View style={styles.headerContainer}>
+          <TouchableOpacity onPress={() => router.push('/')} style={styles.backButton}>
+            <ArrowLeft size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Search Laxman's Menu</Text>
+        </View>
         <View style={styles.searchInputContainer}>
           <TextInput
             style={styles.searchInput}
@@ -181,9 +186,11 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e9ecef',
   },
   headerText: {
+    marginLeft: 40,
+    marginTop: 4,
     fontSize: 20,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: 14,
     color: '#333',
   },
   searchInputContainer: {
@@ -292,6 +299,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
+  backButton: {
+    padding: 5,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+
+  }
 });
 
 export default Search;

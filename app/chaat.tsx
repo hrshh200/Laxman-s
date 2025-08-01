@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Image } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft, Plus } from 'lucide-react-native';
+import { ArrowLeft, Plus, Search } from 'lucide-react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { useAuth } from '@/context/AuthContext';
@@ -86,6 +86,9 @@ export default function Chaat() {
                 <Text style={styles.headerTitle}>
                     <Text style={styles.greenPaan}>Chaat</Text>
                 </Text>
+                 <TouchableOpacity onPress={() => router.push('/search')} style={styles.backButton}>
+                    <Search size={24} color="#333" />
+                </TouchableOpacity>
                 <View style={styles.placeholder} />
             </View>
 

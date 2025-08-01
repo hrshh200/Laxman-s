@@ -8,21 +8,29 @@ export default function ProfileScreen() {
 
     // Mock user data - replace with actual user data from your auth context
     const userData = {
-        name: user?.name || 'Laxman Kumar',
-        email: user?.email || 'laxman@example.com',
-        phone: user?.mobile || '8277729913',
+        name: user?.name || 'Username',
+        email: user?.email || 'useremail@example.com',
+        phone: user?.mobile || '',
         address: 'Kolkata, West Bengal',
         role: user?.role || 'User',
         joinDate: user?.createdAt,
     };
 
     // Mock order data - replace with actual order data
-    const orderStats = {
-        totalOrders: 24,
-        totalSpent: 2850,
-        favoriteItems: 8,
-        avgRating: 4.8,
-    };
+    // const orderStats = {
+    //     totalOrders: 24,
+    //     totalSpent: 2850,
+    //     favoriteItems: 8,
+    //     avgRating: 4.8,
+    // };
+
+    const joinDate = new Date(userData.joinDate);
+    const formattedDate = joinDate.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).replace(/(\d{2}) (\w+) (\d{4})/, '$1 $2, $3');
+
 
     // const recentOrders = [
     //     {
@@ -102,9 +110,9 @@ export default function ProfileScreen() {
             <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
                 {/* User Info Card */}
                 <View style={styles.userCard}>
-                    <View style={styles.userInfo}> 
+                    <View style={styles.userInfo}>
                         <Text style={styles.userName}>Hi, {userData.name}!</Text>
-                         <Text style={styles.userRole}>{userData.role}</Text>
+                        <Text style={styles.userRole}>{userData.role.toUpperCase()}</Text>
                         <View style={styles.userDetail}>
                             <Mail size={16} color="#666" />
                             <Text style={styles.userDetailText}>{userData.email}</Text>
@@ -119,10 +127,11 @@ export default function ProfileScreen() {
                         </View>
                         <View style={styles.userDetail}>
                             <Clock size={16} color="#666" />
-                            <Text style={styles.userDetailText}>Member since {userData.joinDate}</Text>
+                            <Text style={styles.userDetailText}>Member since {formattedDate}</Text>
                         </View>
                     </View>
                 </View>
+
 
                 {/* Order Statistics */}
                 {/* <View style={styles.section}>
@@ -149,6 +158,7 @@ export default function ProfileScreen() {
                         </View>
                     </View>
                 </View> */}
+
 
                 {/* Recent Orders */}
                 {/* <View style={styles.section}>
@@ -309,7 +319,7 @@ const styles = StyleSheet.create({
         color: '#333',
         marginBottom: 12,
     },
-    userRole:{
+    userRole: {
         fontSize: 16,
         fontWeight: 'bold',
         color: '#00C853',

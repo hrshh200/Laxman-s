@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, StatusBar, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, StatusBar, ScrollView, Image, ActivityIndicator, Alert, Dimensions } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { router } from 'expo-router';
 import { collection, getDocs, doc, deleteDoc, updateDoc, addDoc, Timestamp } from 'firebase/firestore';
@@ -24,9 +24,6 @@ export default function Cart() {
     const [loading, setLoading] = useState(true);
     const [deliveryMethod, setDeliveryMethod] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
-
-
-
     // Calculate totals
     const subtotal = cartItems.reduce((sum, item) => sum + item.total, 0);
     const deliveryFee = subtotal > 500 ? 0 : 40;
@@ -101,10 +98,16 @@ export default function Cart() {
                 return;
             }
 
+            if (!deliveryMethod) {
+                Alert.alert('Missing Information', 'Please select a delivery method (Pickup or DineOut)');
+                return;
+            }
+
             setLoading(true);
-            // Create order object
+
+            // Create base order object
             const orderData = {
-                cartItems, // current state
+                cartItems,
                 deliveryMethod,
                 deliveryStatus: 'Waiting for your order to accept',
                 createdAt: Timestamp.now(),
@@ -116,16 +119,25 @@ export default function Cart() {
                 orderAccepted: false
             };
 
-            // Reference to user's orders subcollection
+            // 1️⃣ Add to user's personal orders
             const orderRef = collection(db, 'users', user.uid, 'orders');
+            const orderDocRef = await addDoc(orderRef, orderData);
+            const orderId = orderDocRef.id;
 
-            // Add new document
-            await addDoc(orderRef, orderData);
+            // 2️⃣ Add to pending orders with reference to user + orderId
+            const pendingorderData = {
+                ...orderData,
+                userId: user.uid,
+                orderId: orderId
+            };
+            const pendingorderRef = collection(db, 'pendingorders');
+            await addDoc(pendingorderRef, pendingorderData);
 
-            // Optional: Clear cart or navigate
+            // 3️⃣ Optional: Clear cart
             await deleteCartItems(user.uid);
-            setTimeout(() => {
 
+            // 4️⃣ Redirect
+            setTimeout(() => {
                 setLoading(false);
                 router.push('/orderplaced');
             }, 2000);
@@ -136,6 +148,7 @@ export default function Cart() {
             alert('Failed to place order. Please try again.');
         }
     };
+
 
     const deleteCartItems = async (uid: string) => {
         try {
@@ -249,70 +262,70 @@ export default function Cart() {
             ) : (
                 <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                     <View style={styles.deliveryContainer}>
-                    {/* Delivery Info */}
-                    <View style={styles.deliveryInfo}>
-                        <View style={styles.radioGroup}>
-                            <Text style={styles.sectionTitle}>Select Service</Text>
-                            <View style={styles.radioOptions}>
-                                <TouchableOpacity
-                                    style={styles.radioOption}
-                                    onPress={() => {
-                                        setDeliveryMethod('pickup');
-                                        setSelectedTime(''); // reset selected time
-                                    }}
-                                >
-                                    <View
-                                        style={[
-                                            styles.radioCircle,
-                                            deliveryMethod === 'pickup' && styles.radioSelected,
-                                        ]}
-                                    />
-                                    <Text style={styles.radioLabel}>Pickup</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.radioOption}
-                                    onPress={() => {
-                                        setDeliveryMethod('dineout');
-                                        setSelectedTime('');
-                                    }}
-                                >
-                                    <View
-                                        style={[
-                                            styles.radioCircle,
-                                            deliveryMethod === 'dineout' && styles.radioSelected,
-                                        ]}
-                                    />
-                                    <Text style={styles.radioLabel}>DineOut</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        {/* Show timing options only when a method is selected */}
-                        {deliveryMethod && (
-                            <View style={styles.timeOptionsContainer}>
-                                <Text style={styles.sectionTitle}>
-                                    When will you arrive for {deliveryMethod === 'pickup' ? 'Pickup' : 'DineOut'}?
-                                </Text>
+                        {/* Delivery Info */}
+                        <View style={styles.deliveryInfo}>
+                            <View style={styles.radioGroup}>
+                                <Text style={styles.sectionTitle}>Select Service</Text>
                                 <View style={styles.radioOptions}>
-                                    {['10 mins', '20 mins', '30 mins'].map((time) => (
-                                        <TouchableOpacity
-                                            key={time}
-                                            style={styles.radioOption}
-                                            onPress={() => setSelectedTime(time)}
-                                        >
-                                            <View
-                                                style={[
-                                                    styles.radioCircle,
-                                                    selectedTime === time && styles.radioSelected,
-                                                ]}
-                                            />
-                                            <Text style={styles.radioLabel}>{time}</Text>
-                                        </TouchableOpacity>
-                                    ))}
+                                    <TouchableOpacity
+                                        style={styles.radioOption}
+                                        onPress={() => {
+                                            setDeliveryMethod('pickup');
+                                            setSelectedTime(''); // reset selected time
+                                        }}
+                                    >
+                                        <View
+                                            style={[
+                                                styles.radioCircle,
+                                                deliveryMethod === 'pickup' && styles.radioSelected,
+                                            ]}
+                                        />
+                                        <Text style={styles.radioLabel}>Pickup</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={styles.radioOption}
+                                        onPress={() => {
+                                            setDeliveryMethod('dineout');
+                                            setSelectedTime('');
+                                        }}
+                                    >
+                                        <View
+                                            style={[
+                                                styles.radioCircle,
+                                                deliveryMethod === 'dineout' && styles.radioSelected,
+                                            ]}
+                                        />
+                                        <Text style={styles.radioLabel}>DineOut</Text>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
-                        )}
+
+                            {/* Show timing options only when a method is selected */}
+                            {deliveryMethod && (
+                                <View style={styles.timeOptionsContainer}>
+                                    <Text style={styles.sectionTitle}>
+                                        When will you arrive for {deliveryMethod === 'pickup' ? 'Pickup' : 'DineOut'}?
+                                    </Text>
+                                    <View style={styles.radioOptions}>
+                                        {['10 mins', '20 mins', '30 mins'].map((time) => (
+                                            <TouchableOpacity
+                                                key={time}
+                                                style={styles.radioOption}
+                                                onPress={() => setSelectedTime(time)}
+                                            >
+                                                <View
+                                                    style={[
+                                                        styles.radioCircle,
+                                                        selectedTime === time && styles.radioSelected,
+                                                    ]}
+                                                />
+                                                <Text style={styles.radioLabel}>{time}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </View>
+                            )}
                         </View>
 
                         {/* <View style={styles.deliveryRow}>
@@ -751,7 +764,7 @@ const styles = StyleSheet.create({
     timeOptionsContainer: {
         marginTop: 16,
     },
-    deliveryContainer : {
+    deliveryContainer: {
         flexDirection: 'column',
         marginTop: 8
     }

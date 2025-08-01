@@ -32,34 +32,51 @@ export default function SignUpScreen() {
   };
 
   const SigningUpCustomer = async () => {
-    if (!name || !email || !password || !mobile) {
-      return showToast('Please fill all fields');
+  if (!name || !email || !password || !mobile) {
+    return showToast('Please fill all fields');
+  }
+
+  try {
+    setLoading(true);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    await setDoc(doc(db, 'users', user.uid), {
+      uid: user.uid,
+      name,
+      email,
+      password,
+      mobile,
+      createdAt: new Date().toISOString(),
+      role: "",
+    });
+
+    showToast('Profile Created!');
+    router.replace('/login');
+  } catch (error: any) {
+    // Firebase Auth error codes
+    switch (error.code) {
+      case 'auth/email-already-in-use':
+        showToast('This email is already registered.');
+        break;
+      case 'auth/invalid-email':
+        showToast('Invalid email address.');
+        break;
+      case 'auth/weak-password':
+        showToast('Password should be at least 6 characters.');
+        break;
+      case 'auth/network-request-failed':
+        showToast('Network error. Please check your connection.');
+        break;
+      default:
+        console.error('Signup error:', error);
+        showToast('Signup failed. Please try again.');
     }
+  } finally {
+    setLoading(false);
+  }
+};
 
-    try {
-      setLoading(true);  
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        name,
-        email,
-        password,
-        mobile,
-        createdAt: new Date().toISOString(),
-        role :"",
-      });
-
-      showToast('Profile Created!');
-      router.replace('/login'); // go to home page or login after signup
-
-    } catch (error) {
-      showToast('Signup failed');
-    }finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return <Loader />;

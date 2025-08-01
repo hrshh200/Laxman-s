@@ -6,6 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import { router } from 'expo-router';
 import { Linking } from 'react-native';
 import { ArrowLeft, Clock, CircleCheck as CheckCircle, Truck, ChefHat, Package, MapPin, Calendar, CreditCard } from 'lucide-react-native';
+import { XCircle as CrossCircle } from 'lucide-react-native'; // ✅ Correct name
+
 
 interface CartItem {
   name: string;
@@ -103,6 +105,15 @@ const OrderHistory = () => {
           text: 'Delivered',
           description: 'Order delivered successfully'
         };
+      case 'cancelled':
+  return {
+    icon: CrossCircle,
+    color: '#e74c3c',
+    bgColor: '#E8F5E8',
+    text: 'Cancelled',
+    description: 'Your order has been cancelled by the store'
+  };
+
       default:
         return {
           icon: Clock,
@@ -115,23 +126,29 @@ const OrderHistory = () => {
   };
 
   const formatDate = (timestamp: Timestamp) => {
-    const date = timestamp?.toDate();
-    if (!date) return 'Unknown date';
+  const date = timestamp?.toDate();
+  if (!date) return 'Unknown date';
 
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const now = new Date();
 
-    if (diffDays === 1) return 'Today';
-    if (diffDays === 2) return 'Yesterday';
-    if (diffDays <= 7) return `${diffDays - 1} days ago`;
+  // Remove time part for both dates
+  const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const inputDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-    return date.toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
+  const diffTime = currentDate.getTime() - inputDate.getTime();
+  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+
+  return date.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
 
   const formatTime = (timestamp: Timestamp) => {
     const date = timestamp?.toDate();

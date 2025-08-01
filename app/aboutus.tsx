@@ -252,7 +252,6 @@ const AboutUs = () => {
                 {/* Footer Section */}
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>© {new Date().getFullYear()} Laxman's. All rights reserved.</Text>
-                    <Text style={styles.footerText}>Built by Harsh in Kolkata</Text>
                 </View>
 
 

@@ -22,6 +22,7 @@ import { db } from "@/firebase/firebase"
 import { onSnapshot, query } from "firebase/firestore"
 import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
+import AnimatedBanner from "../AnimatedBanner"
 
 const { width } = Dimensions.get("window")
 
@@ -408,11 +409,11 @@ export default function HomeScreen() {
       id: 3,
       title: "Special Combo Offer",
       subtitle: "Paan + Chaat = Perfect Match",
-      description: "Get 20% off on combo orders above ₹200",
+      description: "",
       image:
         "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop",
       colors: ["#667eea", "#764ba2"],
-      buttonText: "Grab Offer",
+      buttonText: "Explore",
       nav: "paan",
       isOffer: true,
     },
@@ -460,6 +461,7 @@ export default function HomeScreen() {
 
       {/*Food Categories*/}
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
+        <AnimatedBanner />
         {/* Categories */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Categories</Text>
@@ -517,11 +519,11 @@ export default function HomeScreen() {
               >
                 <View style={styles.bannerContent}>
                   <View style={styles.bannerTextSection}>
-                    {banner.isOffer && (
+                    {/* {banner.isOffer && (
                       <View style={styles.offerTag}>
                         <Text style={styles.offerTagText}>SPECIAL OFFER</Text>
                       </View>
-                    )}
+                    )} */}
                     <Text style={styles.bannerTitle}>{banner.title}</Text>
                     <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
                     <Text style={styles.bannerDescription}>{banner.description}</Text>
@@ -576,6 +578,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+    paddingBottom: 100,  
   },
   header: {
     flexDirection: "row",
@@ -931,5 +934,5 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 2,
-  },
+  }
 })

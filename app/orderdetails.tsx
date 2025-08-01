@@ -1,33 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  SafeAreaView, 
-  StatusBar, 
-  ScrollView, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  StatusBar,
+  ScrollView,
+  TouchableOpacity,
   Image,
-  ActivityIndicator 
+  ActivityIndicator,
+  Linking
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { useAuth } from '@/context/AuthContext';
-import { 
-  ArrowLeft, 
-  Clock, 
-  CheckCircle, 
-  Truck, 
-  ChefHat, 
-  Package, 
-  MapPin, 
-  Phone, 
+import {
+  ArrowLeft,
+  Clock,
+  CheckCircle,
+  Truck,
+  ChefHat,
+  Package,
+  MapPin,
+  Phone,
   User,
   Calendar,
   CreditCard,
   Star,
-  Navigation
+  Navigation,
+  XCircle
 } from 'lucide-react-native';
 
 interface CartItem {
@@ -52,6 +54,7 @@ interface Order {
   orderManPhone?: string;
   pickupTime?: string;
   deliveryTime?: string;
+  arrivalTime?: string
 }
 
 const OrderDetails = () => {
@@ -67,7 +70,7 @@ const OrderDetails = () => {
       try {
         const orderRef = doc(db, 'users', user.uid, 'orders', orderId as string);
         const orderSnap = await getDoc(orderRef);
-        
+
         if (orderSnap.exists()) {
           setOrder({
             id: orderSnap.id,
@@ -129,6 +132,14 @@ const OrderDetails = () => {
           title: 'Delivered',
           subtitle: 'Order delivered successfully'
         };
+      case 'Cancelled':
+        return {
+          icon: XCircle,
+          color: '#e74c3c',
+          bgColor: '#E8F5E8',
+          title: 'Cancelled',
+          subtitle: 'Order has been cancelled'
+        };
       default:
         return {
           icon: Clock,
@@ -143,7 +154,7 @@ const OrderDetails = () => {
   const formatDate = (timestamp: any) => {
     const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
     if (!date) return 'Unknown date';
-    
+
     return date.toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'long',
@@ -154,7 +165,7 @@ const OrderDetails = () => {
   const formatTime = (timestamp: any) => {
     const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
     if (!date) return '';
-    
+
     return date.toLocaleTimeString('en-IN', {
       hour: '2-digit',
       minute: '2-digit',
@@ -174,28 +185,16 @@ const OrderDetails = () => {
             <Text style={styles.orderManName}>
               {`Contact Laxman's`}
             </Text>
-            <Text style={styles.orderManRole}>Your Delivery Partner</Text>
           </View>
           <TouchableOpacity style={styles.callButton}>
             <Phone size={20} color="#fff" />
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.pickupTimeContainer}>
           <Clock size={16} color="#FF9800" />
           <Text style={styles.pickupTimeText}>
-            Pickup Time: {order?.pickupTime || '15-20 minutes'}
-          </Text>
-        </View>
-      </View>
-
-      {/* Estimated Delivery */}
-      <View style={styles.estimatedDeliveryCard}>
-        <Truck size={24} color="#e74c3c" />
-        <View style={styles.estimatedDeliveryInfo}>
-          <Text style={styles.estimatedDeliveryTitle}>Estimated Delivery</Text>
-          <Text style={styles.estimatedDeliveryTime}>
-            {order?.estimatedDelivery || '30-45 minutes'}
+            {order?.deliveryMethod.toUpperCase()} Time: {order?.arrivalTime || '15-20 minutes'}
           </Text>
         </View>
       </View>
@@ -212,7 +211,7 @@ const OrderDetails = () => {
         <Text style={styles.processingSubtitle}>
           Our skilled chefs are carefully preparing your order with fresh ingredients
         </Text>
-        
+
         <View style={styles.processingSteps}>
           <View style={styles.processingStep}>
             <View style={[styles.stepIndicator, styles.stepCompleted]}>
@@ -220,14 +219,14 @@ const OrderDetails = () => {
             </View>
             <Text style={styles.stepText}>Order Received</Text>
           </View>
-          
+
           <View style={styles.processingStep}>
             <View style={[styles.stepIndicator, styles.stepActive]}>
               <ChefHat size={16} color="#fff" />
             </View>
             <Text style={styles.stepText}>Preparing Food</Text>
           </View>
-          
+
           <View style={styles.processingStep}>
             <View style={styles.stepIndicator}>
               <Package size={16} color="#ccc" />
@@ -239,6 +238,39 @@ const OrderDetails = () => {
     </View>
   );
 
+  const renderWaitingContent = () => (
+    <View style={styles.contentContainer}>
+      <View style={styles.processingCard}>
+      </View>
+    </View>
+  );
+
+  const renderCancelledContent = () => (
+    <View style={styles.contentContainer}>
+      <View style={styles.processingCard}>
+        <View style={styles.processingAnimation}>
+          <XCircle size={48} color="#e74c3c" />
+        </View>
+        <Text style={styles.processingTitle}>Order Cancelled</Text>
+        <Text style={styles.processingSubtitle}>
+          This order was cancelled by the store. We're sorry for the inconvenience.
+        </Text>
+
+        <View style={styles.processingSteps}>
+          <View style={styles.processingStep}>
+            <TouchableOpacity style={[styles.stepIndicator, styles.contactButton]} onPress={() => {
+              Linking.openURL('tel:8017644259'); // store phone number
+            }}>
+              <Text style={styles.contactButtonText}>Contact Store</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+      </View>
+    </View>
+  );
+
+
   const renderReadyContent = () => (
     <View style={styles.contentContainer}>
       <View style={styles.readyCard}>
@@ -249,7 +281,7 @@ const OrderDetails = () => {
         <Text style={styles.readySubtitle}>
           Your delicious food is packed and ready!
         </Text>
-        
+
         {/* <View style={styles.readyActions}>
           <TouchableOpacity style={styles.trackButton}>
             <Navigation size={20} color="#fff" />
@@ -270,7 +302,7 @@ const OrderDetails = () => {
         <Text style={styles.deliveredSubtitle}>
           Hope you enjoyed your meal. Thank you for choosing us!
         </Text>
-        
+
         <View style={styles.deliveredInfo}>
           <View style={styles.deliveredRow}>
             <Calendar size={16} color="#666" />
@@ -278,7 +310,7 @@ const OrderDetails = () => {
               Delivered on {formatDate(order?.createdAt)}
             </Text>
           </View>
-          
+
           {/* <View style={styles.deliveredRow}>
             <Clock size={16} color="#666" />
             <Text style={styles.deliveredText}>
@@ -307,7 +339,7 @@ const OrderDetails = () => {
 
   const renderStatusContent = () => {
     const status = order?.deliveryStatus?.toLowerCase() || '';
-    
+
     if (status.includes('placed')) {
       return renderOrderPlacedContent();
     } else if (status.includes('processing')) {
@@ -316,7 +348,12 @@ const OrderDetails = () => {
       return renderReadyContent();
     } else if (status.includes('delivered')) {
       return renderDeliveredContent();
-    } else {
+    } else if (status.includes('cancelled')) {
+      return renderCancelledContent();
+    } else if (status.includes('waiting for your order to accept')) {
+      return renderWaitingContent();
+    }
+    else {
       return renderProcessingContent(); // Default fallback
     }
   };
@@ -355,7 +392,7 @@ const OrderDetails = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerBackButton}>
@@ -372,7 +409,7 @@ const OrderDetails = () => {
             <Text style={styles.orderId}>Order #{order.id.slice(-6).toUpperCase()}</Text>
             <Text style={styles.orderTotal}>₹{order.grandTotal}</Text>
           </View>
-          
+
           <View style={styles.orderMeta}>
             <Text style={styles.orderDate}>
               {formatDate(order.createdAt)} • {formatTime(order.createdAt)}
@@ -408,11 +445,11 @@ const OrderDetails = () => {
           <Text style={styles.itemsTitle}>Order Items ({order.cartItems?.length || 0})</Text>
           {order.cartItems?.map((item, index) => (
             <View key={index} style={styles.itemRow}>
-              <Image 
-                source={{ 
-                  uri: item.image || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' 
-                }} 
-                style={styles.itemImage} 
+              <Image
+                source={{
+                  uri: item.image || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
+                }}
+                style={styles.itemImage}
               />
               <View style={styles.itemDetails}>
                 <View style={styles.itemHeader}>
@@ -943,6 +980,25 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 20,
   },
+  stepInactiveIndicator: {
+    backgroundColor: '#ccc',
+  },
+  contactButton: {
+    backgroundColor: '#e74c3c',
+    width: 120,
+    height: 30,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+
+  contactButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
 });
 
 export default OrderDetails;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Image } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft, Plus } from 'lucide-react-native';
+import { ArrowLeft, Plus, Search } from 'lucide-react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { useAuth } from '@/context/AuthContext';
@@ -26,11 +26,17 @@ export default function Paan() {
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-        const startMinutes = 7 * 60 + 30;  // 7:30 AM---morning
-        const endMinutes = 24 * 60 + 30;   // 12:30 AM (next day)
+        const startMinutes = 7 * 60 + 30;  // 7:30 AM
+        const endMinutes = 0 * 60 + 30;    // 12:30 AM (next day as 00:30)
 
-        return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+        // Check if we're between 7:30 AM and 11:59 PM (same day)
+        // OR between midnight and 12:30 AM (next day)
+        return (
+            (currentMinutes >= startMinutes && currentMinutes < 1440) ||
+            (currentMinutes >= 0 && currentMinutes < endMinutes)
+        );
     };
+
 
     const [isAvailableNow, setIsAvailableNow] = useState(isPaanAvailableNow());
 
@@ -82,6 +88,9 @@ export default function Paan() {
                 <Text style={styles.headerTitle}>
                     <Text style={styles.greenPaan}> Exotic Paan</Text>
                 </Text>
+                <TouchableOpacity onPress={() => router.push('/search')} style={styles.backButton}>
+                    <Search size={24} color="#333" />
+                </TouchableOpacity>
                 <View style={styles.placeholder} />
             </View>
 

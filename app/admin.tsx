@@ -11,13 +11,14 @@ import {
     Modal,
     Alert,
     Image,
-    Animated
+    Animated,
+    Dimensions
 } from 'react-native';
 import { router } from 'expo-router';
 import {
     ArrowLeft, Settings, Package, ShoppingCart, DollarSign,
     TrendingUp, CreditCard as Edit3, Save, X, Plus,
-    Trash2, Clock, CircleCheck as CheckCircle, ChefHat, Truck
+    Trash2, Clock, CircleCheck as CheckCircle, ChefHat, Truck, XCircle
 } from 'lucide-react-native';
 import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, Timestamp, onSnapshot, query, orderBy, collectionGroup } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
@@ -43,6 +44,7 @@ interface CartItem {
     quantity: number;
     price: number;
     image?: string;
+    instructions?: string;
     isVeg?: boolean;
 }
 
@@ -82,20 +84,16 @@ const AdminDashboard = () => {
     const [showBanner, setShowBanner] = useState(false);
     const shownOrderIds = useRef<Set<string>>(new Set());
     const notificationSoundRef = useRef<Audio.Sound | null>(null);
-    const [orderQueue, setOrderQueue] = useState<Order[]>([]);
-    const [currentBannerOrder, setCurrentBannerOrder] = useState<Order | null>(null);
-
-
-
+    const [neworders, setNewOrders] = useState<any[]>([]);
 
     const categories = ['paan', 'chaat', 'beverages'];
     const orderStatuses = [
         { value: 'Order Placed', label: 'Order Placed', color: '#2196F3' },
         { value: 'Processing Your Order', label: 'Processing', color: '#FF9800' },
         { value: 'Your Order is Ready', label: 'Ready', color: '#4CAF50' },
-        { value: 'Delivered', label: 'Delivered', color: '#4CAF50' }
+        { value: 'Delivered', label: 'Delivered', color: '#4CAF50' },
+        { value: 'Cancelled', label: 'Cancelled', color: '#e74c3c' }
     ];
-
     // Form states
     const [formData, setFormData] = useState({
         name: '',
@@ -125,6 +123,120 @@ const AdminDashboard = () => {
             setLoading(false);
         }
     };
+    const soundRef = useRef<Audio.Sound | null>(null);
+    //Scrollable banner useEffect for showing the orders
+    useEffect(() => {
+        const pendingRef = collection(db, 'pendingorders');
+
+        const unsubscribe = onSnapshot(pendingRef, async (snapshot) => {
+            const updatedOrders = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            setNewOrders(updatedOrders);
+            if (updatedOrders.length > 0) {
+            // If there are orders, play sound
+            if (!soundRef.current) {
+                const { sound } = await Audio.Sound.createAsync(
+                    require('@/assets/sounds/notification.mp3') // 🟠 Replace with your sound file path
+                );
+                soundRef.current = sound;
+                await sound.playAsync();
+                await sound.setIsLoopingAsync(true); // Optional: loop the sound
+            }
+        } else {
+            // If no orders, stop sound
+            if (soundRef.current) {
+                await soundRef.current.stopAsync();
+                await soundRef.current.unloadAsync();
+                soundRef.current = null;
+            }
+        }
+        });
+
+       return () => {
+        unsubscribe();
+        // Cleanup sound if still loaded
+        if (soundRef.current) {
+            soundRef.current.unloadAsync();
+        }
+    };// Cleanup listener on unmount
+    }, []);
+
+    const handleAccept = async (orderId: string) => {
+        try {
+            // 1. Find the order in neworders array to get userId
+            const order = neworders.find(o => o.id === orderId);
+
+            if (!order) {
+                console.error('Order not found in neworders array');
+                return;
+            }
+
+            const { userId, orderId: userOrderId } = order;
+
+            if (!userId || !userOrderId) {
+                console.error('Missing userId or userOrderId in the order');
+                return;
+            }
+
+            // 2. Update the order in user's subcollection
+            const userOrderRef = doc(db, 'users', userId, 'orders', userOrderId);
+
+            await updateDoc(userOrderRef, {
+                deliveryStatus: 'Order Placed',
+                orderAccepted: true
+            });
+
+            // 3. Delete from pendingorders collection
+            const pendingOrderRef = doc(db, 'pendingorders', orderId);
+            await deleteDoc(pendingOrderRef);
+
+            console.log('✅ Order accepted, updated in user orders, and removed from pendingorders');
+        } catch (err) {
+            console.error('❌ Error accepting order:', err);
+        }
+    };
+
+
+    const handleDecline = async (orderId: string) => {
+        try {
+            // 1. Find the order in the local neworders state
+            const order = neworders.find(o => o.id === orderId);
+
+            if (!order) {
+                console.error('Order not found in neworders array');
+                return;
+            }
+
+            const { userId, orderId: userOrderId } = order;
+
+            if (!userId || !userOrderId) {
+                console.error('Missing userId or orderId in order document');
+                return;
+            }
+
+            // 2. Update the user's actual order document to 'Cancelled'
+            const userOrderRef = doc(db, 'users', userId, 'orders', userOrderId);
+
+            await updateDoc(userOrderRef, {
+                deliveryStatus: 'Cancelled',
+                orderAccepted: false
+            });
+
+            // 3. Delete the order from pendingorders collection
+            const pendingOrderRef = doc(db, 'pendingorders', orderId);
+            await deleteDoc(pendingOrderRef);
+
+            console.log('✅ Order declined and removed from pendingorders');
+
+        } catch (err) {
+            console.error('❌ Error declining order:', err);
+        }
+    };
+
+
 
     //Notification sound for new orders, when trigerred
     const playNotificationSound = async () => {
@@ -158,6 +270,10 @@ const AdminDashboard = () => {
         updateOrderStatus(orderId, 'Order Placed');
     }
 
+    const setOrderCancelStatus = (orderId: string) => {
+        updateOrderStatus(orderId, 'Cancelled');
+    }
+
     useEffect(() => {
         const unsubscribeAll: (() => void)[] = [];
 
@@ -183,28 +299,6 @@ const AdminDashboard = () => {
                         setOrders(prevOrders => {
                             const prevIds = prevOrders.map(o => o.id);
                             const newOrders = updatedOrders.filter(o => !prevIds.includes(o.id));
-
-                            if (newOrders.length > 0) {
-                                const unseenOrders = newOrders.filter(order => !shownOrderIds.current.has(order.id));
-
-                                if (unseenOrders.length > 0) {
-                                    const newestOrder = unseenOrders
-                                        .sort((a, b) =>
-                                            ((b.createdAt as Timestamp)?.toDate().getTime() || 0) -
-                                            ((a.createdAt as Timestamp)?.toDate().getTime() || 0)
-                                        )[0];
-
-                                    setLatestNewOrder(newestOrder);
-                                    setShowBanner(true);
-
-                                    playNotificationSound();
-
-                                    // Mark this order as shown
-                                    shownOrderIds.current.add(newestOrder.id);
-                                }
-                            }
-
-
                             const filteredPrev = prevOrders.filter(o => o.userId !== userDoc.id);
                             const merged = [...filteredPrev, ...updatedOrders];
                             return merged.sort((a, b) => b.createdAt?.toDate().getTime() - a.createdAt?.toDate().getTime());
@@ -230,11 +324,11 @@ const AdminDashboard = () => {
         fetchMenuItems();
     }, [selectedCategory]);
 
-    useEffect(() => {
-        return () => {
-            stopNotificationSound(); // in case sound is playing
-        };
-    }, []);
+    // useEffect(() => {
+    //     return () => {
+    //         stopNotificationSound(); // in case sound is playing
+    //     };
+    // }, []);
 
 
     const updateMenuItem = async () => {
@@ -378,16 +472,30 @@ const AdminDashboard = () => {
 
     const getDashboardStats = () => {
         const totalOrders = orders.length;
-        const totalRevenue = orders.reduce((sum, order) => sum + order.grandTotal, 0);
+        const totalRevenue = orders
+            .filter(order => order.deliveryStatus?.toLowerCase() !== 'cancelled')
+            .reduce((sum, order) => sum + order.grandTotal, 0);
+
+
         const pendingOrders = orders.filter(order =>
-            !order.deliveryStatus.toLowerCase().includes('delivered')
+            order.deliveryStatus &&
+            order.deliveryStatus.toLowerCase() !== 'delivered' &&
+            order.deliveryStatus.toLowerCase() !== 'cancelled'
         ).length;
+
+        const cancelledOrders = orders.filter(order =>
+            order.deliveryStatus?.toLowerCase() === 'cancelled'
+        ).length;
+
         const paidOrders = orders.filter(order =>
             order.paymentStatus?.toLowerCase() === 'paid'
         ).length;
 
-        return { totalOrders, totalRevenue, pendingOrders, paidOrders };
+        return { totalOrders, totalRevenue, pendingOrders, paidOrders, cancelledOrders };
     };
+
+
+
 
     const formatDate = (timestamp: Timestamp) => {
         const date = timestamp?.toDate();
@@ -486,7 +594,8 @@ const AdminDashboard = () => {
                                     { icon: <ShoppingCart size={24} color="#e74c3c" />, value: stats.totalOrders, label: 'Total Orders' },
                                     { icon: <DollarSign size={24} color="#4CAF50" />, value: `₹${stats.totalRevenue}`, label: 'Revenue' },
                                     { icon: <Clock size={24} color="#FF9800" />, value: stats.pendingOrders, label: 'Pending' },
-                                    { icon: <CheckCircle size={24} color="#4CAF50" />, value: stats.paidOrders, label: 'Paid Orders' }
+                                    { icon: <CheckCircle size={24} color="#4CAF50" />, value: stats.paidOrders, label: 'Paid Orders' },
+                                    { icon: <XCircle size={24} color="#e74c3c" />, value: stats.cancelledOrders, label: 'Cancelled Orders' }
                                 ].map((stat, index) => (
                                     <View key={index} style={styles.statCard}>
                                         {stat.icon}
@@ -593,7 +702,7 @@ const AdminDashboard = () => {
                     <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                         <View style={styles.filterContainer}>
                             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                {['all', 'placed', 'processing', 'ready', 'delivered'].map((filter) => (
+                                {['all', 'placed', 'processing', 'ready', 'delivered', 'cancelled'].map((filter) => (
                                     <TouchableOpacity
                                         key={filter}
                                         style={[
@@ -621,8 +730,10 @@ const AdminDashboard = () => {
                                         <Text style={styles.orderId}>#{order.id.slice(-6).toUpperCase()}</Text>
                                         <Text style={styles.orderTotal}>₹{order.grandTotal}</Text>
                                     </View>
-                                    {(order.deliveryStatus !== 'Delivered' &&
-                                        <Text style={styles.arrivalText}>{order.deliveryMethod.toUpperCase()} - Arriving in {order.arrivalTime}..</Text>
+                                    {(order.deliveryStatus !== 'Delivered' && order.deliveryStatus !== 'Cancelled') && (
+                                        <Text style={styles.arrivalText}>
+                                            {order.deliveryMethod.toUpperCase()} - Arriving in {order.arrivalTime}..
+                                        </Text>
                                     )}
                                     <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
                                     <Text style={styles.orderEmail}>{order.orderName || 'Unknown User'}</Text>
@@ -639,76 +750,104 @@ const AdminDashboard = () => {
                                                 +{order.cartItems.length - 2} more items
                                             </Text>
                                         )} */}
+                                        <Text>Instructions added by customer: </Text>
+                                        {
+                                            order.cartItems?.map((item, idx) => (
+                                                <Text key={idx} style={styles.orderInstructions}>
+                                                    {item.instructions}
+                                                </Text>
+                                            ))
+                                        }
                                     </View>
 
-                                    <View style={styles.statusUpdateContainer}>
-                                        <Text style={styles.statusLabel}>Order Status:</Text>
-                                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                            {orderStatuses.map((status) => {
-                                                const isDelivered = order.deliveryStatus === 'Delivered';
-                                                const isDisabled = isDelivered && status.value !== 'Delivered';
+                                    {order.deliveryMethod === 'pickup' && (
+                                        <View style={styles.statusUpdateContainer}>
+                                            <Text style={styles.statusLabel}>Order Status:</Text>
 
-                                                return (
-                                                    <TouchableOpacity
-                                                        key={status.value}
-                                                        style={[
-                                                            styles.statusButton,
-                                                            order.deliveryStatus === status.value && { backgroundColor: status.color },
-                                                            isDisabled && { opacity: 0.5 } // dimmed style for disabled
-                                                        ]}
-                                                        onPress={() => {
-                                                            if (!isDisabled) updateOrderStatus(order.id, status.value);
-                                                        }}
-                                                        disabled={isDisabled}
-                                                    >
-                                                        <Text style={[
-                                                            styles.statusButtonText,
-                                                            order.deliveryStatus === status.value && { color: '#fff' },
-                                                            isDisabled && { color: '#999' } // text color for disabled
-                                                        ]}>
-                                                            {status.label}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                );
-                                            })}
-                                        </ScrollView>
-                                    </View>
+                                            {order.deliveryStatus === 'Cancelled' ? (
+                                                <View style={{ marginTop: 8 }}>
+                                                    <Text style={[styles.statusButtonText, { color: '#e74c3c', fontWeight: 'bold' }]}>
+                                                        Order Cancelled
+                                                    </Text>
+                                                </View>
+                                            ) : (
+                                                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                                    {orderStatuses.map((status) => {
+                                                        const isDelivered = order.deliveryStatus === 'Delivered';
+                                                        const isDisabled = isDelivered && status.value !== 'Delivered';
 
-
-                                    <View style={styles.paymentUpdateContainer}>
-                                        <Text style={styles.statusLabel}>Payment:</Text>
-                                        <View style={styles.paymentButtons}>
-                                            <TouchableOpacity
-                                                style={[
-                                                    styles.paymentButton,
-                                                    order.paymentStatus?.toLowerCase() === 'paid' && styles.paymentButtonPaid
-                                                ]}
-                                                onPress={() => updatePaymentStatus(order.id, 'Paid')}
-                                            >
-                                                <Text style={[
-                                                    styles.paymentButtonText,
-                                                    order.paymentStatus?.toLowerCase() === 'paid' && styles.paymentButtonTextPaid
-                                                ]}>
-                                                    Mark Paid
-                                                </Text>
-                                            </TouchableOpacity>
-
-                                            <TouchableOpacity
-                                                style={[
-                                                    styles.paymentButton,
-                                                    order.paymentStatus?.toLowerCase() === 'pending' && styles.paymentButtonPending
-                                                ]}
-                                                onPress={() => updatePaymentStatus(order.id, 'Pending')}
-                                            >
-                                                <Text style={[
-                                                    styles.paymentButtonText,
-                                                    order.paymentStatus?.toLowerCase() === 'pending' && styles.paymentButtonTextPending
-                                                ]}>
-                                                    Mark Pending
-                                                </Text>
-                                            </TouchableOpacity>
+                                                        return (
+                                                            <TouchableOpacity
+                                                                key={status.value}
+                                                                style={[
+                                                                    styles.statusButton,
+                                                                    order.deliveryStatus === status.value && { backgroundColor: status.color },
+                                                                    isDisabled && { opacity: 0.5 },
+                                                                ]}
+                                                                onPress={() => {
+                                                                    if (!isDisabled) updateOrderStatus(order.id, status.value);
+                                                                }}
+                                                                disabled={isDisabled}
+                                                            >
+                                                                <Text
+                                                                    style={[
+                                                                        styles.statusButtonText,
+                                                                        order.deliveryStatus === status.value && { color: '#fff' },
+                                                                        isDisabled && { color: '#999' },
+                                                                    ]}
+                                                                >
+                                                                    {status.label}
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        );
+                                                    })}
+                                                </ScrollView>
+                                            )}
                                         </View>
-                                    </View>
+                                    )}
+
+
+                                    {order.deliveryStatus !== 'Cancelled' && (
+                                        <View style={styles.paymentUpdateContainer}>
+                                            <Text style={styles.statusLabel}>Payment:</Text>
+                                            <View style={styles.paymentButtons}>
+                                                <TouchableOpacity
+                                                    style={[
+                                                        styles.paymentButton,
+                                                        order.paymentStatus?.toLowerCase() === 'paid' && styles.paymentButtonPaid,
+                                                    ]}
+                                                    onPress={() => updatePaymentStatus(order.id, 'Paid')}
+                                                >
+                                                    <Text
+                                                        style={[
+                                                            styles.paymentButtonText,
+                                                            order.paymentStatus?.toLowerCase() === 'paid' && styles.paymentButtonTextPaid,
+                                                        ]}
+                                                    >
+                                                        Mark Paid
+                                                    </Text>
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity
+                                                    style={[
+                                                        styles.paymentButton,
+                                                        order.paymentStatus?.toLowerCase() === 'pending' && styles.paymentButtonPending,
+                                                    ]}
+                                                    onPress={() => updatePaymentStatus(order.id, 'Pending')}
+                                                >
+                                                    <Text
+                                                        style={[
+                                                            styles.paymentButtonText,
+                                                            order.paymentStatus?.toLowerCase() === 'pending' && styles.paymentButtonTextPending,
+                                                        ]}
+                                                    >
+                                                        Mark Pending
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    )}
+
                                 </View>
                             ))}
                         </View>
@@ -739,7 +878,65 @@ const AdminDashboard = () => {
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+            <View>
+                {neworders.length > 0 ? (
+                    <>
+                        <ScrollView style={styles.bannerCard}>
+                            {neworders.map((order, index) => (
+                                <View key={index} style={styles.card}>
+                                    <Text style={styles.title}>New Order #{order.id.slice(-6).toUpperCase()}</Text>
+                                    <Text style={styles.subText}>Customer: {order.orderName || 'Unknown'}</Text>
+                                    <Text style={styles.subText}>Method: {order.deliveryMethod}</Text>
+                                    <Text style={styles.subText}>Mobile: {order.orderMobileNumber}</Text>
+                                    <Text style={styles.subText}>Total: ₹{order.grandTotal}</Text>
 
+                                    <View style={styles.itemList}>
+                                        {order.cartItems?.map((item: any, i: number) => (
+                                            <Text key={i} style={styles.item}>{item.name} × {item.quantity}</Text>
+                                        ))}
+                                    </View>
+
+                                    <View style={styles.actions}>
+                                        <TouchableOpacity onPress={() => handleAccept(order.id)} style={styles.acceptBtn}>
+                                            <Text style={styles.btnText}>Accept</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => handleDecline(order.id)} style={styles.declineBtn}>
+                                            <Text style={styles.btnText}>Decline</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ))}
+                        </ScrollView>
+
+                        {/* ✅ Pending Orders Count */}
+                        <View style={{ alignItems: 'center', marginTop: 12 }}>
+                            <View
+                                style={{
+                                    width: 60,
+                                    height: 60,
+                                    borderRadius: 30,
+                                    backgroundColor: '#e74c3c',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
+                                    +{neworders.length}
+                                </Text>
+                            </View>
+                        </View>
+
+                    </>
+                ) : (
+                    <View style={{ padding: 16, alignItems: 'center' }}>
+                        <Text style={{ color: '#888', fontSize: 16 }}>No pending orders at the moment.</Text>
+                    </View>
+                )}
+            </View>
+
+
+
+            {/* ✅ Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.headerBackButton}>
                     <ArrowLeft size={24} color="#333" />
@@ -748,11 +945,12 @@ const AdminDashboard = () => {
                 <View style={styles.placeholder} />
             </View>
 
+            {/* ✅ Tabs */}
             <View style={styles.tabContainer}>
                 {[
                     { key: 'dashboard', icon: <TrendingUp size={20} />, label: 'Dashboard' },
                     { key: 'menu', icon: <Package size={20} />, label: 'Menu' },
-                    { key: 'orders', icon: <ShoppingCart size={20} />, label: 'Orders' }
+                    { key: 'orders', icon: <ShoppingCart size={20} />, label: 'Orders' },
                 ].map((tab) => (
                     <TouchableOpacity
                         key={tab.key}
@@ -767,77 +965,15 @@ const AdminDashboard = () => {
                 ))}
             </View>
 
+            {/* ✅ Tab Content & Modals */}
             {renderTabContent()}
             {renderFormModal(true)}
             {renderFormModal(false)}
-
-            {showBanner && latestNewOrder && (
-                <View style={styles.banner}>
-                    <Text style={styles.bannerHeader}>🛒 New Order Placed</Text>
-
-                    <View style={styles.divider} />
-
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Order ID:</Text>
-                        <Text style={styles.value}>{latestNewOrder.id.slice(-6).toUpperCase()}</Text>
-                    </View>
-
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Customer:</Text>
-                        <Text style={styles.value}>{latestNewOrder.orderName}</Text>
-                    </View>
-
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Mobile:</Text>
-                        <Text style={styles.value}>{latestNewOrder.orderMobileNumber}</Text>
-                    </View>
-
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Total:</Text>
-                        <Text style={styles.value}>₹{latestNewOrder.grandTotal}</Text>
-                    </View>
-
-                    {latestNewOrder.cartItems.map((item, index) => (
-                        <Text key={index}>
-                            • {item.name} x {item.quantity}
-                        </Text>
-                    ))}
-
-                    {/* ✅ Action Buttons */}
-
-                    <View style={styles.actionButtons}>
-                        <TouchableOpacity
-                            style={styles.acceptButton}
-                            onPress={() => {
-                                stopNotificationSound();
-                                setActiveTab('orders');
-                                setShowBanner(false);
-                                setOrderStatus(latestNewOrder.id);
-                            }}
-                        >
-                            <Text style={styles.buttonText}>Accept</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.declineButton}
-                            onPress={() => {
-                                stopNotificationSound();
-                                setShowBanner(false);
-                            }}
-                        >
-                            <Text style={styles.buttonText}>Decline</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            )}
-
-
-
-
         </SafeAreaView>
     );
-};
 
+};
+const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -1420,6 +1556,68 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
         fontSize: 14,
+    },
+    orderInstructions: {
+        fontSize: 14,
+        color: '#333',
+        fontWeight: 'bold', // this makes the text bold
+        marginTop: 4,
+    },
+    card: {
+        width: width - 40,
+        margin: 20,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    title: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 8,
+    },
+    subText: {
+        fontSize: 14,
+        marginBottom: 4,
+        color: '#444',
+    },
+    itemList: {
+        marginVertical: 8,
+    },
+    item: {
+        fontSize: 13,
+        color: '#555',
+    },
+    actions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 12,
+    },
+    acceptBtn: {
+        backgroundColor: '#4CAF50',
+        padding: 10,
+        borderRadius: 8,
+        flex: 1,
+        marginRight: 8,
+        alignItems: 'center',
+    },
+    declineBtn: {
+        backgroundColor: '#e74c3c',
+        padding: 10,
+        borderRadius: 8,
+        flex: 1,
+        alignItems: 'center',
+    },
+    btnText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    bannerCard: {
+        height: 250,
+        backgroundColor: '#fafafa',
     },
 });
 

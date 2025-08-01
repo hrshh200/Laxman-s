@@ -4,6 +4,15 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import Loader from '@/components/Loader';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
+import { auth } from '@/firebase/firebase';
+import * as AuthSession from 'expo-auth-session';
+
+
+WebBrowser.maybeCompleteAuthSession();
+
 
 export default function LoginScreen() {
     const { user, login, logout } = useAuth();
@@ -11,13 +20,46 @@ export default function LoginScreen() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
+
+    const [request, response, promptAsync] = Google.useAuthRequest({
+        androidClientId: '54124910689-lto28ot0ts6drd9r2db85vlaict3di07.apps.googleusercontent.com',
+        iosClientId: '54124910689-e00o9a6f6cabdlud9ett9j19k3b1tm79.apps.googleusercontent.com',
+        webClientId: '54124910689-ne7kc1vfg4a0ua9bhudb9a22e6dm4rga.apps.googleusercontent.com',
+        redirectUri: 'https://auth.expo.io/@harshsharma088/Laxmans',
+    });
+
+
+
     const showToast = (msg: string) => {
         if (Platform.OS === 'android') {
-          ToastAndroid.show(msg, ToastAndroid.SHORT);
+            ToastAndroid.show(msg, ToastAndroid.SHORT);
         } else {
-          Alert.alert(msg);
+            Alert.alert(msg);
         }
-      };
+    };
+    // useEffect(() => {
+    //     console.log("Google request:", request);
+    //     console.log("Google response:", response);
+    // }, [request, response]);
+
+
+
+    useEffect(() => {
+        if (response?.type === 'success') {
+            const { id_token } = response.params;
+
+            const credential = GoogleAuthProvider.credential(id_token);
+            signInWithCredential(auth, credential)
+                .then(() => {
+                    showToast('Logged in with Google');
+                })
+                .catch((error) => {
+                    console.error('Google Sign-In error', error);
+                    showToast('Google login failed');
+                });
+        }
+    }, [response]);
+
 
     useEffect(() => {
         if (user) {
@@ -28,20 +70,20 @@ export default function LoginScreen() {
     }, [user]);
 
     const handleLogin = async () => {
-    if (!email || !password) {
-        return alert('Please enter email and password');
-    }
+        if (!email || !password) {
+            return alert('Please enter email and password');
+        }
 
-    try {
-        setLoading(true);
-        await login(email, password); // ✅ Wait for login to finish
-    } catch (error) {
-        console.error('Login error:', error);
-        alert('Login failed');
-    } finally {
-        setLoading(false); // ✅ Hide loader after login attempt finishes
-    }
-};
+        try {
+            setLoading(true);
+            await login(email, password); // ✅ Wait for login to finish
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('Login failed');
+        } finally {
+            setLoading(false); // ✅ Hide loader after login attempt finishes
+        }
+    };
 
 
     if (loading) {
@@ -52,7 +94,7 @@ export default function LoginScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <Image
-                source={{ uri: 'https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg?auto=compress&cs=tinysrgb&w=600' }}
+                source={{ uri: 'https://lh3.googleusercontent.com/p/AF1QipMDN1-i1QSAtpp4Gnjgsu3WYJrAkz-oUqpSAhLu=s1360-w1360-h1020' }}
                 style={styles.image}
                 resizeMode="cover"
             />
@@ -86,9 +128,23 @@ export default function LoginScreen() {
                     <Text style={styles.backText}>← Back to Home</Text>
                 </TouchableOpacity>
 
+                <TouchableOpacity onPress={() => router.push('/forgotpassword')}>
+                    <Text style={styles.registerText}>Forgot Password?</Text>
+                </TouchableOpacity>
+
+
                 <TouchableOpacity onPress={() => router.push('/signup')}>
                     <Text style={styles.registerText}>Don’t have an account? Sign up</Text>
                 </TouchableOpacity>
+
+                {/* <TouchableOpacity
+                    style={[styles.loginButton, { backgroundColor: '#4285F4' }]}
+                    onPress={() => promptAsync()}
+                    disabled={false}
+                >
+                    <Text style={styles.loginButtonText}>Continue with Google</Text>
+                </TouchableOpacity> */}
+
             </View>
         </SafeAreaView>
     );

@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../firebase/firebase'; // ✅ FIXED: db added here
 import { doc, getDoc } from 'firebase/firestore';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -33,11 +34,16 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
+  const resetPassword = async (email) => {
+  // Implement Firebase or custom logic
+  await sendPasswordResetEmail(auth, email); // if using Firebase
+};
+
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
   const logout = () => signOut(auth);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, resetPassword }}>
       {!loading && children}
     </AuthContext.Provider>
   );
