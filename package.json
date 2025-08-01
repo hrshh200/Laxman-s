@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "eas-build-pre-install": "node scripts/setup-google-services.js"
   },
   "dependencies": {
     "@expo/vector-icons": "github:expo/vector-icons",
