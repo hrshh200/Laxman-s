@@ -1,9 +1,18 @@
-import * as fs from 'fs';
+const fs = require('fs');
+const path = require('path');
 
-const fileContent = process.env.GOOGLE_SERVICES_JSON;
+const googleServicesBase64 = process.env.GOOGLE_SERVICES_JSON;
 
-if (!fileContent) {
-  throw new Error('Missing GOOGLE_SERVICES_JSON env variable');
+if (!googleServicesBase64) {
+  throw new Error('GOOGLE_SERVICES_JSON environment variable is not defined');
 }
 
-fs.writeFileSync('android/app/google-services.json', Buffer.from(fileContent, 'base64').toString('utf-8'));
+const googleServicesJson = Buffer.from(googleServicesBase64, 'base64').toString('utf-8');
+const filePath = path.join(__dirname, '..', 'android', 'app', 'google-services.json');
+
+// Ensure the directory exists
+fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+// Write the file
+fs.writeFileSync(filePath, googleServicesJson);
+console.log('✅ google-services.json created successfully');

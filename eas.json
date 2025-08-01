@@ -1,12 +1,14 @@
 {
   "cli": {
-    "version": ">= 16.17.3",
-    "appVersionSource": "remote"
+    "version": ">= 3.0.0"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON"
+      }
     },
     "preview": {
       "distribution": "internal",
