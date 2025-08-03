@@ -1,0 +1,61 @@
+buildscript {
+    ext {
+        // Define all versions in a properly structured map
+        projectExt = [
+            kotlinVersion: "1.8.22",
+            buildToolsVersion: "34.0.0",
+            minSdkVersion: 21,
+            compileSdkVersion: 34, // Keep at 34 for better compatibility
+            targetSdkVersion: 34,
+            ndkVersion: "25.2.9519653"
+        ]
+        
+        // Make versions available at root level too
+        kotlinVersion = projectExt.kotlinVersion
+        buildToolsVersion = projectExt.buildToolsVersion
+        minSdkVersion = projectExt.minSdkVersion
+        compileSdkVersion = projectExt.compileSdkVersion
+        targetSdkVersion = projectExt.targetSdkVersion
+        ndkVersion = projectExt.ndkVersion
+        
+        // Explicit expo plugin configuration
+        expoPluginMap = [
+            kotlinVersion: projectExt.kotlinVersion,
+            // Add other required Expo keys here
+        ]
+    }
+    
+    repositories {
+        google()
+        mavenCentral()
+    }
+    
+    dependencies {
+        classpath("com.android.tools.build:gradle:7.4.2")
+        classpath("com.facebook.react:react-native-gradle-plugin:0.73.6")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    }
+}
+def reactNativeAndroidDir = new File(
+  providers.exec {
+    workingDir(rootDir)
+    commandLine("node", "--print", "require.resolve('react-native/package.json')")
+  }.standardOutput.asText.get().trim(),
+  "../android"
+)
+
+allprojects {
+  repositories {
+    maven {
+      // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+      url(reactNativeAndroidDir)
+    }
+
+    google()
+    mavenCentral()
+    maven { url 'https://www.jitpack.io' }
+  }
+}
+
+apply plugin: "com.facebook.react.rootproject"
+apply plugin: "expo-root-project"

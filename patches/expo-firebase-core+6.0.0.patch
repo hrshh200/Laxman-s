@@ -1,0 +1,15 @@
+diff --git a/node_modules/expo-firebase-core/android/build.gradle b/node_modules/expo-firebase-core/android/build.gradle
+index 9bda09b..4d55457 100644
+--- a/node_modules/expo-firebase-core/android/build.gradle
++++ b/node_modules/expo-firebase-core/android/build.gradle
+@@ -37,8 +37,8 @@ buildscript {
+ 
+ // Creating sources with comments
+ task androidSourcesJar(type: Jar) {
+-  classifier = 'sources'
+-  from android.sourceSets.main.java.srcDirs
++    archiveClassifier.set('sources')  // Changed from classifier = 'sources'
++    from android.sourceSets.main.java.srcDirs
+ }
+ 
+ afterEvaluate {

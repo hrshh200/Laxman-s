@@ -20,9 +20,6 @@
     },
     "android": {
       "package": "com.harsh.laxmanapp",
-      "googleServicesFile": "./android/app/google-services.json",
-      "compileSdkVersion": 35,
-      "targetSdkVersion": 35,
       "permissions": [
         "RECEIVE_SMS",
         "READ_SMS",
@@ -38,7 +35,6 @@
     },
     "ios": {
       "bundleIdentifier": "com.harsh.laxmanapp",
-      "googleServicesFile": "./ios/LaxmanApp/GoogleService-Info.plist",
       "supportsTablet": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -60,9 +56,10 @@
         "expo-build-properties",
         {
           "android": {
+            "kotlinVersion": "1.8.22",
             "compileSdkVersion": 34,
             "targetSdkVersion": 34,
-            "minSdkVersion": 23
+            "buildToolsVersion": "34.0.0"
           }
         }
       ]
