@@ -8,7 +8,7 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           position: 'absolute',          // 👈 Allow absolute positioning
-          bottom: 30,                    // 👈 Moves tab bar up from the bottom
+          bottom: 5,                    // 👈 Moves tab bar up from the bottom
           left: 20,                      // 👈 Optional side spacing
           right: 20,
           backgroundColor: '#fff',
@@ -40,15 +40,6 @@ export default function TabLayout() {
           title: 'Search',
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="search" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="favorites"
-        options={{
-          title: 'Favorites',
-          tabBarIcon: ({ size, color }) => (
-            <MaterialIcons name="favorite" size={size} color={color} />
           ),
         }}
       />

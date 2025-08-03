@@ -59,12 +59,12 @@ const AboutUs = () => {
         ));
     };
 
-    const shopLocation = {
-        latitude: 22.5372, // Elgin Road, Kolkata approx
-        longitude: 88.3556,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-    };
+    // const shopLocation = {
+    //     latitude: 22.5372, // Elgin Road, Kolkata approx
+    //     longitude: 88.3556,
+    //     latitudeDelta: 0.01,
+    //     longitudeDelta: 0.01,
+    // };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -145,12 +145,12 @@ const AboutUs = () => {
                         </View>
 
 
-                        <View style={styles.section}>
+                        {/* <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Location</Text>
                             <MapView style={styles.map} initialRegion={shopLocation}>
                                 <Marker coordinate={shopLocation} title="Laxman's (The Refreshment Shop ),Pan shop" description="Elgin Road, Kolkata" />
                             </MapView>
-                        </View>
+                        </View> */}
 
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Our Achievements</Text>
