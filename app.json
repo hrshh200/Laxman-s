@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Laxman's",
-    "owner": "harshsharma111",
+    "owner": "harshsharma088",
     "slug": "laxmans",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,6 +21,8 @@
     "android": {
       "package": "com.harsh.laxmanapp",
       "googleServicesFile": "./android/app/google-services.json",
+      "compileSdkVersion": 35,
+      "targetSdkVersion": 35,
       "permissions": [
         "RECEIVE_SMS",
         "READ_SMS",
@@ -52,17 +54,25 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "@react-native-firebase/app",
-      "@react-native-firebase/auth",
       "expo-location",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 23
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "eas": {
-        "projectId": "9793b144-8999-4c31-be24-b2bc1dd042d4"
+        "projectId": "336191be-1011-40d4-bd9f-9c0b098b8504"
       }
     }
   }

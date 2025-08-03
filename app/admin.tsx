@@ -136,32 +136,32 @@ const AdminDashboard = () => {
 
             setNewOrders(updatedOrders);
             if (updatedOrders.length > 0) {
-            // If there are orders, play sound
-            if (!soundRef.current) {
-                const { sound } = await Audio.Sound.createAsync(
-                    require('@/assets/sounds/notification.mp3') // 🟠 Replace with your sound file path
-                );
-                soundRef.current = sound;
-                await sound.playAsync();
-                await sound.setIsLoopingAsync(true); // Optional: loop the sound
+                // If there are orders, play sound
+                if (!soundRef.current) {
+                    const { sound } = await Audio.Sound.createAsync(
+                        require('@/assets/sounds/notification.mp3') // 🟠 Replace with your sound file path
+                    );
+                    soundRef.current = sound;
+                    await sound.playAsync();
+                    await sound.setIsLoopingAsync(true); // Optional: loop the sound
+                }
+            } else {
+                // If no orders, stop sound
+                if (soundRef.current) {
+                    await soundRef.current.stopAsync();
+                    await soundRef.current.unloadAsync();
+                    soundRef.current = null;
+                }
             }
-        } else {
-            // If no orders, stop sound
-            if (soundRef.current) {
-                await soundRef.current.stopAsync();
-                await soundRef.current.unloadAsync();
-                soundRef.current = null;
-            }
-        }
         });
 
-       return () => {
-        unsubscribe();
-        // Cleanup sound if still loaded
-        if (soundRef.current) {
-            soundRef.current.unloadAsync();
-        }
-    };// Cleanup listener on unmount
+        return () => {
+            unsubscribe();
+            // Cleanup sound if still loaded
+            if (soundRef.current) {
+                soundRef.current.unloadAsync();
+            }
+        };// Cleanup listener on unmount
     }, []);
 
     const handleAccept = async (orderId: string) => {

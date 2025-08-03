@@ -23,19 +23,19 @@ export default function beverages() {
     const { user, logout } = useAuth();
 
     const isBeveragesAvailableNow = () => {
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const startMinutes = 7 * 60 + 30;  // 7:30 AM
-  const endMinutes = 0 * 60 + 30;    // 12:30 AM (next day as 00:30)
+        const startMinutes = 7 * 60 + 30;  // 7:30 AM
+        const endMinutes = 0 * 60 + 30;    // 12:30 AM (next day as 00:30)
 
-  // Check if we're between 7:30 AM and 11:59 PM (same day)
-  // OR between midnight and 12:30 AM (next day)
-  return (
-    (currentMinutes >= startMinutes && currentMinutes < 1440) ||
-    (currentMinutes >= 0 && currentMinutes < endMinutes)
-  );
-};
+        // Check if we're between 7:30 AM and 11:59 PM (same day)
+        // OR between midnight and 12:30 AM (next day)
+        return (
+            (currentMinutes >= startMinutes && currentMinutes < 1440) ||
+            (currentMinutes >= 0 && currentMinutes < endMinutes)
+        );
+    };
 
 
     const [isAvailableNow, setIsAvailableNow] = useState(isBeveragesAvailableNow());

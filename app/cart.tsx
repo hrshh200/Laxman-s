@@ -28,7 +28,7 @@ export default function Cart() {
     const subtotal = cartItems.reduce((sum, item) => sum + item.total, 0);
     const deliveryFee = subtotal > 500 ? 0 : 40;
     const taxes = Math.round(subtotal * 0.05); // 5% tax
-    const grandTotal = subtotal + deliveryFee + taxes;
+    const grandTotal = subtotal;
 
     useEffect(() => {
         if (user?.uid) {
@@ -358,13 +358,13 @@ export default function Cart() {
                         <View style={styles.billRow}>
                             <Text style={styles.billLabel}>Delivery Fee</Text>
                             <Text style={[styles.billValue, deliveryFee === 0 && styles.freeText]}>
-                                {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
+                                {deliveryFee === 0 ? 'FREE' : `₹0`}
                             </Text>
                         </View>
 
                         <View style={styles.billRow}>
                             <Text style={styles.billLabel}>Taxes & Charges</Text>
-                            <Text style={styles.billValue}>₹{taxes}</Text>
+                            <Text style={styles.billValue}>₹0</Text>
                         </View>
 
                         {deliveryFee === 0 && (

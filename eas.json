@@ -1,19 +1,21 @@
 {
   "cli": {
-    "version": ">= 3.0.0"
+    "version": ">= 3.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "env": {
-        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON"
+      "android": {
+        "buildType": "apk"
       }
     },
     "preview": {
+      "developmentClient": false,
       "distribution": "internal",
-      "env": {
-        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON"
+      "android": {
+        "buildType": "apk"
       }
     },
     "production": {

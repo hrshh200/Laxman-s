@@ -106,13 +106,13 @@ const OrderHistory = () => {
           description: 'Order delivered successfully'
         };
       case 'cancelled':
-  return {
-    icon: CrossCircle,
-    color: '#e74c3c',
-    bgColor: '#E8F5E8',
-    text: 'Cancelled',
-    description: 'Your order has been cancelled by the store'
-  };
+        return {
+          icon: CrossCircle,
+          color: '#e74c3c',
+          bgColor: '#E8F5E8',
+          text: 'Cancelled',
+          description: 'Your order has been cancelled by the store'
+        };
 
       default:
         return {
@@ -126,28 +126,28 @@ const OrderHistory = () => {
   };
 
   const formatDate = (timestamp: Timestamp) => {
-  const date = timestamp?.toDate();
-  if (!date) return 'Unknown date';
+    const date = timestamp?.toDate();
+    if (!date) return 'Unknown date';
 
-  const now = new Date();
+    const now = new Date();
 
-  // Remove time part for both dates
-  const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const inputDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    // Remove time part for both dates
+    const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const inputDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-  const diffTime = currentDate.getTime() - inputDate.getTime();
-  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    const diffTime = currentDate.getTime() - inputDate.getTime();
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
 
-  return date.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-};
+    return date.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
 
 
   const formatTime = (timestamp: Timestamp) => {
