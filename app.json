@@ -41,9 +41,7 @@
         "backgroundColor": "#FFFFFF"
       },
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false,
-        "NSMicrophoneUsageDescription": "This app uses the microphone to play sounds",
-        "UIBackgroundModes": ["audio"]
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "web": {
@@ -63,7 +61,8 @@
             "buildToolsVersion": "34.0.0"
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
