@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ToastAndroid, Alert, Platform, TouchableWithoutFeedback, KeyboardAvoidingView, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ToastAndroid, Alert, Platform, TouchableWithoutFeedback, KeyboardAvoidingView, Keyboard, StatusBar} from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +14,7 @@ import * as AuthSession from 'expo-auth-session';
 
 WebBrowser.maybeCompleteAuthSession();
 
-
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 export default function LoginScreen() {
     const { user, login, logout } = useAuth();
     const [email, setEmail] = useState('');
@@ -169,6 +169,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingTop: topPadding
     },
     image: {
         width: '100%',

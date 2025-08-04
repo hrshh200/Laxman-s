@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Linking, ScrollView, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Linking, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Platform } from 'react-native';
 import { Phone, MapPin, Star, ArrowLeft, Clock, Award, Users, Heart } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
@@ -7,7 +7,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import { WebView } from 'react-native-webview'; // At the top with other imports
 
-
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 const AboutUs = () => {
     const handleCall = () => {
         Linking.openURL('tel:+918017644259');
@@ -270,6 +270,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingTop: topPadding
     },
     header: {
         flexDirection: 'row',

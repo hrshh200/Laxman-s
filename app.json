@@ -41,7 +41,9 @@
         "backgroundColor": "#FFFFFF"
       },
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMicrophoneUsageDescription": "This app uses the microphone to play sounds",
+        "UIBackgroundModes": ["audio"]
       }
     },
     "web": {

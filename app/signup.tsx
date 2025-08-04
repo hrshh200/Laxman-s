@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
   ScrollView,
+  StatusBar
 } from 'react-native';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -16,6 +17,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/firebase';
 import Loader from '@/components/Loader';
 
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 export default function SignUpScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -139,7 +141,7 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingTop: 80,
+    paddingTop: topPadding,
     paddingHorizontal: 30,
     backgroundColor: '#ffffff',
     alignItems: 'center',

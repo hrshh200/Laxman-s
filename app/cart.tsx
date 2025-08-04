@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, StatusBar, ScrollView, Image, ActivityIndicator, Alert, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, StatusBar, ScrollView, Image, ActivityIndicator, Alert, Dimensions, Platform } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { router } from 'expo-router';
 import { collection, getDocs, doc, deleteDoc, updateDoc, addDoc, Timestamp } from 'firebase/firestore';
@@ -18,6 +18,7 @@ type CartItem = {
     isVeg?: boolean;
 };
 
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 export default function Cart() {
     const { user } = useAuth();
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -425,6 +426,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingTop: topPadding
     },
     header: {
         flexDirection: 'row',

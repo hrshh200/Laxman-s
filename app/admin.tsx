@@ -12,7 +12,8 @@ import {
     Alert,
     Image,
     Animated,
-    Dimensions
+    Dimensions,
+    Platform
 } from 'react-native';
 import { router } from 'expo-router';
 import {
@@ -62,7 +63,7 @@ interface Order {
     arrivalTime?: string;
     orderMobileNumber?: string
 }
-
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 const AdminDashboard = () => {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -133,6 +134,7 @@ const AdminDashboard = () => {
                 id: doc.id,
                 ...doc.data()
             }));
+
 
             setNewOrders(updatedOrders);
             if (updatedOrders.length > 0) {
@@ -978,6 +980,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingTop: topPadding
     },
     header: {
         flexDirection: 'row',

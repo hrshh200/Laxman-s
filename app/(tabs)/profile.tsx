@@ -1,7 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Image, Platform } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { router } from 'expo-router';
 import { User, MapPin, Phone, Mail, Clock, Star, ShoppingBag, Heart, Settings, LogOut, ChevronRight, ArrowLeft } from 'lucide-react-native';
+
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 
 export default function ProfileScreen() {
     const { user, logout } = useAuth();
@@ -15,7 +17,6 @@ export default function ProfileScreen() {
         role: user?.role || 'User',
         joinDate: user?.createdAt,
     };
-
     // Mock order data - replace with actual order data
     // const orderStats = {
     //     totalOrders: 24,
@@ -101,11 +102,16 @@ export default function ProfileScreen() {
 
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.headerIcon}>
                     <ArrowLeft size={24} color="#333" />
                 </TouchableOpacity>
+
                 <Text style={styles.headerTitle}>Profile</Text>
+
+                {/* This invisible view keeps the title centered by balancing the back button */}
+                <View style={styles.headerIcon} />
             </View>
+
 
             <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
                 {/* User Info Card */}
@@ -221,6 +227,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+       paddingTop: topPadding
     },
     centerContainer: {
         flex: 1,
@@ -229,18 +236,31 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 15,
-        backgroundColor: '#fff',
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
+        backgroundColor: '#fff',
     },
+
+    headerIcon: {
+        width: 24,
+        height: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
     headerTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#333',
         textAlign: 'center',
+        flex: 1,
     },
+
     scrollView: {
         flex: 1,
     },

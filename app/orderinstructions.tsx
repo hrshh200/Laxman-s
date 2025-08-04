@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, ScrollView } from 'react-native';
+import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, ScrollView, Platform } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Minus, Plus, ShoppingCart } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthContext';
 import { getFirestore, collection, addDoc, doc, updateDoc, where, query, getDocs } from 'firebase/firestore';
 import { getApp } from 'firebase/app';
 
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 export default function OrderInstructions() {
     const { id, name, description, fulldescription, price, image, isVeg } = useLocalSearchParams();
 
@@ -190,6 +191,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingTop: topPadding
     },
     header: {
         flexDirection: 'row',

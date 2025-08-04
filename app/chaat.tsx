@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Image, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, Plus, Search } from 'lucide-react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { useAuth } from '@/context/AuthContext';
 
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 export default function Chaat() {
 
     type ChaatItem = {
@@ -154,6 +155,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingTop: topPadding
     },
     header: {
         flexDirection: 'row',

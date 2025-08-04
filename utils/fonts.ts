@@ -1,4 +1,10 @@
-import { RFValue } from "react-native-responsive-fontsize";
+// utils/fonts.ts
+import { Dimensions, PixelRatio } from 'react-native';
 
-// A responsive function to scale font based on screen size
-export const getFontSize = (size: number) => RFValue(size);
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const scale = SCREEN_WIDTH / 375;
+
+export function getFontSize(size: number) {
+  return Math.round(PixelRatio.roundToNearestPixel(size * scale));
+}

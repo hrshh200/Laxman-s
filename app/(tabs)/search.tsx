@@ -9,6 +9,8 @@ import {
   SafeAreaView,
   FlatList,
   Image,
+  Platform,
+  StatusBar
 } from 'react-native';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
@@ -26,7 +28,7 @@ interface FoodItem {
   fulldescription?: string;
   isVeg?: boolean;
 }
-
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 const Search: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<FoodItem[]>([]);
@@ -178,7 +180,9 @@ const Search: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8f9fa' },
+  container: { flex: 1, backgroundColor: '#f8f9fa',
+    paddingTop:topPadding
+   },
   searchContainer: {
     padding: 16,
     backgroundColor: '#fff',

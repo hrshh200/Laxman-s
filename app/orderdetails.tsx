@@ -9,7 +9,8 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Linking
+  Linking,
+  Platform
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
@@ -57,6 +58,7 @@ interface Order {
   arrivalTime?: string
 }
 
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 const OrderDetails = () => {
   const { orderId } = useLocalSearchParams();
   const { user } = useAuth();
@@ -485,6 +487,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+    paddingTop: topPadding
   },
   header: {
     flexDirection: 'row',

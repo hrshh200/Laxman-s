@@ -6,11 +6,13 @@ import {
   Animated,
   Dimensions,
   StatusBar,
+  Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 
 export default function OrderPlaced() {
   const router = useRouter();
@@ -111,6 +113,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingTop: topPadding
   },
   backgroundCircle: {
     position: 'absolute',

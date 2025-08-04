@@ -11,6 +11,7 @@ import {
   StatusBar,
   Animated,
   Dimensions,
+  Platform
 } from "react-native"
 import { useFocusEffect } from "@react-navigation/native"
 import { User, ShoppingCart, Star, MapPin } from "lucide-react-native"
@@ -24,7 +25,8 @@ import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import AnimatedBanner from "../AnimatedBanner"
 
-const { width } = Dimensions.get("window")
+const { width } = Dimensions.get("window");
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 
 const CookingAnimation = () => {
   const rotateAnim = useRef(new Animated.Value(0)).current
@@ -578,6 +580,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+    paddingTop: topPadding
   },
   header: {
     flexDirection: "row",

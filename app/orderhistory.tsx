@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView, StatusBar, ScrollView } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView, StatusBar, ScrollView, Platform } from 'react-native';
 import { collection, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { useAuth } from '@/context/AuthContext';
@@ -28,7 +28,7 @@ interface Order {
   estimatedDelivery?: string;
   paymentStatus?: string;
 }
-
+const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 const OrderHistory = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -362,6 +362,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingTop: topPadding
   },
   header: {
     flexDirection: 'row',
