@@ -1,5 +1,4 @@
 "use client"
-
 import { Image } from "expo-image"
 import {
   StyleSheet,
@@ -24,10 +23,10 @@ import { onSnapshot, query } from "firebase/firestore"
 import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import AnimatedBanner from "../AnimatedBanner";
-import { Typography } from '@/constants/Typography';
+import { LockedWindowDimensions } from '@/utils/dimensions';
+const { width, height } = LockedWindowDimensions;
 
 
-const { width } = Dimensions.get("window");
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 
 const CookingAnimation = () => {
@@ -583,6 +582,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
     //paddingTop: topPadding
+    height: height,
   },
   header: {
     flexDirection: "row",
@@ -817,7 +817,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   processingBanner: {
-    width: width - 20,
+    width: LockedWindowDimensions.width - 20,
     marginHorizontal: 10,
     borderRadius: 12,
     paddingVertical: 16,
@@ -826,7 +826,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    paddingBottom: 80
+    paddingBottom: 100
   },
   bannerYellow: {
     backgroundColor: "#FFF8E1",

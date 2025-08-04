@@ -1,19 +1,16 @@
-import { Dimensions, ScaledSize } from 'react-native';
+// utils/dimensions.ts
+import { Dimensions } from 'react-native';
 
-let windowDimensions: ScaledSize = Dimensions.get('window');
-let screenDimensions: ScaledSize = Dimensions.get('screen');
+const window = Dimensions.get('window');
+const screen = Dimensions.get('screen');
 
-// Lock initial dimensions
-export function getWindowDimensions() {
-  return windowDimensions;
-}
+// Lock at app launch
+export const LockedWindowDimensions = {
+  width: window.width,
+  height: window.height,
+};
 
-export function getScreenDimensions() {
-  return screenDimensions;
-}
-
-// Optional: Update if you need to handle orientation changes
-export function updateDimensions() {
-  windowDimensions = Dimensions.get('window');
-  screenDimensions = Dimensions.get('screen');
-}
+export const LockedScreenDimensions = {
+  width: screen.width,
+  height: screen.height,
+};

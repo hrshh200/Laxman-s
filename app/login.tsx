@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ToastAndroid, Alert, Platform, TouchableWithoutFeedback, KeyboardAvoidingView, Keyboard, StatusBar, ScrollView} from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ToastAndroid, Alert, Platform, TouchableWithoutFeedback, KeyboardAvoidingView, Keyboard, StatusBar, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
@@ -94,74 +94,80 @@ export default function LoginScreen() {
 
 
     return (
-  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={topPadding}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Image
-            source={{ uri: 'https://lh3.googleusercontent.com/p/AF1QipMDN1-i1QSAtpp4Gnjgsu3WYJrAkz-oUqpSAhLu=s1360-w1360-h1020' }}
-            style={styles.image}
-            resizeMode="cover"
-          />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <SafeAreaView style={styles.container}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    keyboardVerticalOffset={topPadding}
+                    style={{ flex: 1 }}
+                >
+                    <ScrollView
+                        contentContainerStyle={{ flexGrow: 1 }}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        <View style={{ flex: 1 }}>
+                            {/* Top Image */}
+                            <Image
+                                source={{ uri: 'https://lh3.googleusercontent.com/p/AF1QipMDN1-i1QSAtpp4Gnjgsu3WYJrAkz-oUqpSAhLu=s1360-w1360-h1020' }}
+                                style={styles.image}
+                                resizeMode="cover"
+                            />
 
-          <View style={styles.formContainer}>
-            <Text style={styles.title}>Welcome to Laxman’s Refreshment Shop</Text>
-            <Text style={styles.subtitle}>Login to explore your favorite food</Text>
+                            {/* Form Section */}
+                            <View style={styles.formContainer}>
+                                <Text style={styles.title}>Welcome to Laxman’s Refreshment Shop</Text>
+                                <Text style={styles.subtitle}>Login to explore your favorite food</Text>
 
-            <TextInput
-              placeholder="Email"
-              placeholderTextColor="#888"
-              style={styles.input}
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-            />
-            <View style={styles.inputShowContainer}>
-              <TextInput
-                placeholder="Password"
-                placeholderTextColor="#888"
-                style={styles.input}
-                secureTextEntry={secure}
-                value={password}
-                onChangeText={setPassword}
-              />
-              <TouchableOpacity onPress={() => setSecure(!secure)} style={styles.icon}>
-                <MaterialIcons
-                  name={secure ? 'visibility-off' : 'visibility'}
-                  size={24}
-                  color="#888"
-                />
-              </TouchableOpacity>
-            </View>
+                                <TextInput
+                                    placeholder="Email"
+                                    placeholderTextColor="#888"
+                                    style={styles.input}
+                                    keyboardType="email-address"
+                                    value={email}
+                                    onChangeText={setEmail}
+                                />
 
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Login</Text>
-            </TouchableOpacity>
+                                <View style={styles.inputShowContainer}>
+                                    <TextInput
+                                        placeholder="Password"
+                                        placeholderTextColor="#888"
+                                        style={styles.input}
+                                        secureTextEntry={secure}
+                                        value={password}
+                                        onChangeText={setPassword}
+                                    />
+                                    <TouchableOpacity onPress={() => setSecure(!secure)} style={styles.icon}>
+                                        <MaterialIcons
+                                            name={secure ? 'visibility-off' : 'visibility'}
+                                            size={24}
+                                            color="#888"
+                                        />
+                                    </TouchableOpacity>
+                                </View>
 
-            <TouchableOpacity onPress={() => router.push('/')}>
-              <Text style={styles.backText}>← Back to Home</Text>
-            </TouchableOpacity>
+                                <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                                    <Text style={styles.loginButtonText}>Login</Text>
+                                </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => router.push('/forgotpassword')}>
-              <Text style={styles.registerText}>Forgot Password?</Text>
-            </TouchableOpacity>
+                                <TouchableOpacity onPress={() => router.push('/')}>
+                                    <Text style={styles.backText}>← Back to Home</Text>
+                                </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => router.push('/signup')}>
-              <Text style={styles.registerText}>Don’t have an account? Sign up</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  </TouchableWithoutFeedback>
-);
+                                <TouchableOpacity onPress={() => router.push('/forgotpassword')}>
+                                    <Text style={styles.registerText}>Forgot Password?</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity onPress={() => router.push('/signup')}>
+                                    <Text style={styles.registerText}>Don’t have an account? Sign up</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
+        </TouchableWithoutFeedback>
+    );
+
 
 }
 
