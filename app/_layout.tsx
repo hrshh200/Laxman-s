@@ -1,39 +1,44 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 function AppLayout() {
   const { loading } = useAuth();
 
   if (loading) {
     return (
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#fff'
-      }}>
+      <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color="#00C853" />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={styles.container}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
-    </View>
+    </SafeAreaView>
   );
 }
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <AppLayout />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <AppLayout />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});
