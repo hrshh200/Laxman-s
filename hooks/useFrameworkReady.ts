@@ -1,3 +1,4 @@
+// hooks/useFrameworkReady.ts
 import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
@@ -9,18 +10,14 @@ export function useFrameworkReady() {
   useEffect(() => {
     async function prepare() {
       try {
-        // ✅ Load custom fonts if you have any
+        // ✅ Load fonts used by GlobalText
         await Font.loadAsync({
-          // Example font
-          'Inter-Regular': require('@/assets/fonts/SpaceMono-Regular.ttf'),
+          'Poppins-Regular': require('@/assets/fonts/Poppins-Regular.ttf'),
+          'Poppins-Bold': require('@/assets/fonts/Poppins-Bold.ttf'),
         });
-
-        // 🟢 Any other async init logic here
-        // await somethingElse();
       } catch (e) {
-        console.warn('Error loading assets', e);
+        console.warn('Error loading fonts', e);
       } finally {
-        // ✅ Hide splash screen when ready
         await SplashScreen.hideAsync();
       }
     }
