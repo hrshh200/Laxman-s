@@ -24,6 +24,8 @@ import { onSnapshot, query } from "firebase/firestore"
 import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import AnimatedBanner from "../AnimatedBanner";
+import { Typography } from '@/constants/Typography';
+
 
 const { width } = Dimensions.get("window");
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
@@ -824,7 +826,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    paddingBottom: 110
+    paddingBottom: 80
   },
   bannerYellow: {
     backgroundColor: "#FFF8E1",

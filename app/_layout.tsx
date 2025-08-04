@@ -1,4 +1,3 @@
-// app/_layout.tsx
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../context/AuthContext';
@@ -6,14 +5,18 @@ import { ActivityIndicator, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigationContainerRef } from '@react-navigation/native';
+import { getWindowDimensions } from '../utils/dimensions';
 
 const NAVIGATION_STATE_KEY = 'NAVIGATION_STATE';
 
 function AppLayout() {
-  const { loading } = useAuth(); // Access loading
+  const { loading } = useAuth();
   const [initialState, setInitialState] = useState();
   const [isReady, setIsReady] = useState(false);
   const navigationRef = useNavigationContainerRef();
+
+  // Get locked dimensions
+  const { width, height } = getWindowDimensions();
 
   // Restore saved navigation state on mount
   useEffect(() => {
@@ -51,7 +54,7 @@ function AppLayout() {
   }
 
   return (
-    <>
+    <View style={{ width, height }}>
       <Stack
         screenOptions={{ headerShown: false }}
         initialState={initialState}
@@ -62,7 +65,7 @@ function AppLayout() {
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
-    </>
+    </View>
   );
 }
 
