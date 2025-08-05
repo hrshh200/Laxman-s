@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Sta
 import { useAuth } from '@/context/AuthContext';
 import { router } from 'expo-router';
 import { User, MapPin, Phone, Mail, Clock, Star, ShoppingBag, Heart, Settings, LogOut, ChevronRight, ArrowLeft } from 'lucide-react-native';
+import AdminOrderBanner from '../AdminOrderBanner';
 
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 
@@ -79,6 +80,7 @@ export default function ProfileScreen() {
         return (
             <SafeAreaView style={styles.container}>
                 <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+                <AdminOrderBanner />
                 <View style={styles.centerContainer}>
                     <View style={styles.unknownUserCard}>
                         <User size={64} color="#e74c3c" />
@@ -98,6 +100,7 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <AdminOrderBanner />
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
             {/* Header */}

@@ -25,6 +25,7 @@ import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, Timestamp, onSn
 import { db } from '@/firebase/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { Audio } from 'expo-av';
+import AdminOrderBanner from './AdminOrderBanner';
 
 
 
@@ -124,47 +125,48 @@ const AdminDashboard = () => {
             setLoading(false);
         }
     };
+    
     const soundRef = useRef<Audio.Sound | null>(null);
     //Scrollable banner useEffect for showing the orders
-    useEffect(() => {
-        const pendingRef = collection(db, 'pendingorders');
+    // useEffect(() => {
+    //     const pendingRef = collection(db, 'pendingorders');
 
-        const unsubscribe = onSnapshot(pendingRef, async (snapshot) => {
-            const updatedOrders = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+    //     const unsubscribe = onSnapshot(pendingRef, async (snapshot) => {
+    //         const updatedOrders = snapshot.docs.map(doc => ({
+    //             id: doc.id,
+    //             ...doc.data()
+    //         }));
 
 
-            setNewOrders(updatedOrders);
-            if (updatedOrders.length > 0) {
-                // If there are orders, play sound
-                if (!soundRef.current) {
-                    const { sound } = await Audio.Sound.createAsync(
-                        require('@/assets/sounds/notification.mp3') // 🟠 Replace with your sound file path
-                    );
-                    soundRef.current = sound;
-                    await sound.playAsync();
-                    await sound.setIsLoopingAsync(true); // Optional: loop the sound
-                }
-            } else {
-                // If no orders, stop sound
-                if (soundRef.current) {
-                    await soundRef.current.stopAsync();
-                    await soundRef.current.unloadAsync();
-                    soundRef.current = null;
-                }
-            }
-        });
+    //         setNewOrders(updatedOrders);
+    //         if (updatedOrders.length > 0) {
+    //             // If there are orders, play sound
+    //             if (!soundRef.current) {
+    //                 const { sound } = await Audio.Sound.createAsync(
+    //                     require('@/assets/sounds/notification.mp3') // 🟠 Replace with your sound file path
+    //                 );
+    //                 soundRef.current = sound;
+    //                 await sound.playAsync();
+    //                 await sound.setIsLoopingAsync(true); // Optional: loop the sound
+    //             }
+    //         } else {
+    //             // If no orders, stop sound
+    //             if (soundRef.current) {
+    //                 await soundRef.current.stopAsync();
+    //                 await soundRef.current.unloadAsync();
+    //                 soundRef.current = null;
+    //             }
+    //         }
+    //     });
 
-        return () => {
-            unsubscribe();
-            // Cleanup sound if still loaded
-            if (soundRef.current) {
-                soundRef.current.unloadAsync();
-            }
-        };// Cleanup listener on unmount
-    }, []);
+    //     return () => {
+    //         unsubscribe();
+    //         // Cleanup sound if still loaded
+    //         if (soundRef.current) {
+    //             soundRef.current.unloadAsync();
+    //         }
+    //     };// Cleanup listener on unmount
+    // }, []);
 
     const handleAccept = async (orderId: string) => {
         try {
@@ -525,6 +527,7 @@ const AdminDashboard = () => {
                         <TextInput
                             style={styles.input}
                             placeholder="Item Name"
+                            placeholderTextColor="#888"
                             value={formData.name}
                             onChangeText={(text) => setFormData({ ...formData, name: text })}
                         />
@@ -532,6 +535,7 @@ const AdminDashboard = () => {
                         <TextInput
                             style={styles.input}
                             placeholder="Description"
+                            placeholderTextColor="#888"
                             value={formData.description}
                             onChangeText={(text) => setFormData({ ...formData, description: text })}
                         />
@@ -539,6 +543,7 @@ const AdminDashboard = () => {
                         <TextInput
                             style={[styles.input, styles.textArea]}
                             placeholder="Full Description"
+                            placeholderTextColor="#888"
                             value={formData.fulldescription}
                             onChangeText={(text) => setFormData({ ...formData, fulldescription: text })}
                             multiline
@@ -548,6 +553,7 @@ const AdminDashboard = () => {
                         <TextInput
                             style={styles.input}
                             placeholder="Price"
+                            placeholderTextColor="#888"
                             value={formData.price}
                             onChangeText={(text) => setFormData({ ...formData, price: text })}
                             keyboardType="numeric"
@@ -556,6 +562,7 @@ const AdminDashboard = () => {
                         <TextInput
                             style={styles.input}
                             placeholder="Image URL"
+                            placeholderTextColor="#888"
                             value={formData.image}
                             onChangeText={(text) => setFormData({ ...formData, image: text })}
                         />
@@ -879,8 +886,9 @@ const AdminDashboard = () => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <AdminOrderBanner />
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-            <View>
+            {/* <View>
                 {neworders.length > 0 ? (
                     <>
                         <ScrollView style={styles.bannerCard}>
@@ -910,7 +918,7 @@ const AdminDashboard = () => {
                             ))}
                         </ScrollView>
 
-                        {/* ✅ Pending Orders Count */}
+                    
                         <View style={{ alignItems: 'center', marginTop: 12 }}>
                             <View
                                 style={{
@@ -934,9 +942,7 @@ const AdminDashboard = () => {
                         <Text style={{ color: '#888', fontSize: 16 }}>No pending orders at the moment.</Text>
                     </View>
                 )}
-            </View>
-
-
+            </View> */}
 
             {/* ✅ Header */}
             <View style={styles.header}>

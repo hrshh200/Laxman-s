@@ -5,6 +5,7 @@ import { ArrowLeft, Plus, Search } from 'lucide-react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { useAuth } from '@/context/AuthContext';
+import AdminOrderBanner from './AdminOrderBanner';
 
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 export default function beverages() {

@@ -16,6 +16,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { router } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
+import AdminOrderBanner from '../AdminOrderBanner';
 
 interface FoodItem {
   id: string;
@@ -97,6 +98,7 @@ const Search: React.FC = () => {
   };
   return (
     <SafeAreaView style={styles.container}>
+      <AdminOrderBanner />
       <View style={styles.searchContainer}>
         <View style={styles.headerContainer}>
           <TouchableOpacity onPress={() => router.push('/')} style={styles.backButton}>

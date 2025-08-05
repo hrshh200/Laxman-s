@@ -17,7 +17,7 @@ import { User, ShoppingCart, Star, MapPin } from "lucide-react-native"
 import { useRouter } from "expo-router"
 import { useAuth } from "@/context/AuthContext"
 import { useEffect, useState, useCallback, useRef } from "react"
-import { collection, getDocs } from "firebase/firestore"
+import { collection, getDocs, updateDoc, deleteDoc, doc, getDoc } from "firebase/firestore"
 import { db } from "@/firebase/firebase"
 import { onSnapshot, query } from "firebase/firestore"
 import { Ionicons } from "@expo/vector-icons"
@@ -25,9 +25,11 @@ import { LinearGradient } from "expo-linear-gradient"
 import AnimatedBanner from "../AnimatedBanner";
 import { LockedWindowDimensions } from '@/utils/dimensions';
 const { width, height } = LockedWindowDimensions;
-
+import { Audio } from 'expo-av';
+import AdminOrderBanner from "../AdminOrderBanner"
 
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
+
 
 const CookingAnimation = () => {
   const rotateAnim = useRef(new Animated.Value(0)).current
@@ -277,6 +279,11 @@ export default function HomeScreen() {
   const { user, logout } = useAuth()
   const [cartCount, setCartCount] = useState(0)
   const [activeOrder, setActiveOrder] = useState<Order | null>(null)
+  //const [orders, setOrders] = useState<Order[]>([]);
+  const notificationSoundRef = useRef<Audio.Sound | null>(null);
+  const [neworders, setNewOrders] = useState<any[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+
 
   useFocusEffect(
     useCallback(() => {
@@ -294,6 +301,137 @@ export default function HomeScreen() {
       fetchCartCount()
     }, [user]),
   )
+
+  // const soundRef = useRef<Audio.Sound | null>(null);
+  // //Scrollable banner useEffect for showing the orders
+  // useEffect(() => {
+  //   if (!user?.uid) return;
+
+  //   const fetchUserRoleAndListenOrders = async () => {
+  //     const userDocRef = doc(db, "users", user.uid);
+  //     const userDocSnap = await getDoc(userDocRef);
+
+  //     if (userDocSnap.exists()) {
+  //       const userData = userDocSnap.data();
+
+  //       if (userData.role === "admin") {
+  //         setIsAdmin(true); // ✅ Track admin
+  //         const pendingRef = collection(db, "pendingorders");
+
+  //         const unsubscribe = onSnapshot(pendingRef, async (snapshot) => {
+  //           const updatedOrders = snapshot.docs.map((doc) => ({
+  //             id: doc.id,
+  //             ...doc.data(),
+  //           }));
+
+  //           setNewOrders(updatedOrders);
+
+  //           if (updatedOrders.length > 0) {
+  //             if (!soundRef.current) {
+  //               const { sound } = await Audio.Sound.createAsync(
+  //                 require("@/assets/sounds/notification.mp3")
+  //               );
+  //               soundRef.current = sound;
+  //               await sound.playAsync();
+  //               await sound.setIsLoopingAsync(true);
+  //             }
+  //           } else {
+  //             if (soundRef.current) {
+  //               await soundRef.current.stopAsync();
+  //               await soundRef.current.unloadAsync();
+  //               soundRef.current = null;
+  //             }
+  //           }
+  //         });
+
+  //         return () => {
+  //           unsubscribe();
+  //           if (soundRef.current) {
+  //             soundRef.current.unloadAsync();
+  //             soundRef.current = null;
+  //           }
+  //         };
+  //       } else {
+  //         setIsAdmin(false); // ❌ Not admin
+  //       }
+  //     }
+  //   };
+
+  //   fetchUserRoleAndListenOrders();
+  // }, [user?.uid]);
+
+
+  // const handleAccept = async (orderId: string) => {
+  //   try {
+  //     // 1. Find the order in neworders array to get userId
+  //     const order = neworders.find(o => o.id === orderId);
+
+  //     if (!order) {
+  //       console.error('Order not found in neworders array');
+  //       return;
+  //     }
+
+  //     const { userId, orderId: userOrderId } = order;
+
+  //     if (!userId || !userOrderId) {
+  //       console.error('Missing userId or userOrderId in the order');
+  //       return;
+  //     }
+
+  //     // 2. Update the order in user's subcollection
+  //     const userOrderRef = doc(db, 'users', userId, 'orders', userOrderId);
+
+  //     await updateDoc(userOrderRef, {
+  //       deliveryStatus: 'Order Placed',
+  //       orderAccepted: true
+  //     });
+
+  //     // 3. Delete from pendingorders collection
+  //     const pendingOrderRef = doc(db, 'pendingorders', orderId);
+  //     await deleteDoc(pendingOrderRef);
+
+  //     console.log('✅ Order accepted, updated in user orders, and removed from pendingorders');
+  //   } catch (err) {
+  //     console.error('❌ Error accepting order:', err);
+  //   }
+  // };
+
+
+  // const handleDecline = async (orderId: string) => {
+  //   try {
+  //     // 1. Find the order in the local neworders state
+  //     const order = neworders.find(o => o.id === orderId);
+
+  //     if (!order) {
+  //       console.error('Order not found in neworders array');
+  //       return;
+  //     }
+
+  //     const { userId, orderId: userOrderId } = order;
+
+  //     if (!userId || !userOrderId) {
+  //       console.error('Missing userId or orderId in order document');
+  //       return;
+  //     }
+
+  //     // 2. Update the user's actual order document to 'Cancelled'
+  //     const userOrderRef = doc(db, 'users', userId, 'orders', userOrderId);
+
+  //     await updateDoc(userOrderRef, {
+  //       deliveryStatus: 'Cancelled',
+  //       orderAccepted: false
+  //     });
+
+  //     // 3. Delete the order from pendingorders collection
+  //     const pendingOrderRef = doc(db, 'pendingorders', orderId);
+  //     await deleteDoc(pendingOrderRef);
+
+  //     console.log('✅ Order declined and removed from pendingorders');
+
+  //   } catch (err) {
+  //     console.error('❌ Error declining order:', err);
+  //   }
+  // };
 
   useEffect(() => {
     if (!user?.uid) return
@@ -427,6 +565,44 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5FFF5" />
+
+      {/* <View style={styles.fixedBanner}>
+        {isAdmin && neworders.length > 0 ? (
+          <View style={[styles.bannerCardNotification, { maxHeight: 400 }]}>
+            <ScrollView>
+              {neworders.map((order, index) => (
+                <View key={index} style={styles.card}>
+                  <Text style={styles.title}>New Order #{order.id.slice(-6).toUpperCase()}</Text>
+                  <Text style={[styles.subText, { fontWeight: 'bold' }]}>
+                    Customer: {order.orderName || 'Unknown'}
+                  </Text>
+
+                  <Text style={styles.subText}>Method: {order.deliveryMethod}</Text>
+                  <Text style={styles.subText}>Mobile: {order.orderMobileNumber}</Text>
+                  <Text style={styles.subText}>Total: ₹{order.grandTotal}</Text>
+
+                  <View style={styles.itemList}>
+                    {order.cartItems?.map((item: any, i: number) => (
+                      <Text key={i} style={styles.item}>{item.name} × {item.quantity}</Text>
+                    ))}
+                  </View>
+
+                  <View style={styles.actions}>
+                    <TouchableOpacity onPress={() => handleAccept(order.id)} style={styles.acceptBtn}>
+                      <Text style={styles.btnText}>Accept</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDecline(order.id)} style={styles.declineBtn}>
+                      <Text style={styles.btnText}>Decline</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        ) : (''
+      )}
+      </View> */}
+      <AdminOrderBanner />
 
       {/* Header */}
       <View style={styles.header}>
@@ -681,6 +857,32 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+
+  bannerCardNotification: {
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 16,
+    borderRadius: 16,
+    //overflow: "hidden",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+
+  fixedBanner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    borderRadius: 16,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,
   },
   bannerGradient: {
@@ -939,5 +1141,55 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 2,
+  },
+  card: {
+    width: width - 40,
+    margin: 8,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  itemList: {
+    marginVertical: 8,
+    fontWeight: 'bold',
+    color: '#000'
+  },
+  item: {
+    fontSize: 13,
+    color: '#555',
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  acceptBtn: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 8,
+    alignItems: 'center',
+  },
+  declineBtn: {
+    backgroundColor: '#e74c3c',
+    padding: 10,
+    borderRadius: 8,
+    flex: 1,
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  btnText: {
+    color: '#fff',
+    fontWeight: 'bold',
   }
 })

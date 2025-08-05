@@ -6,6 +6,7 @@ import { Image } from 'expo-image';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import { WebView } from 'react-native-webview'; // At the top with other imports
+import AdminOrderBanner from './AdminOrderBanner';
 
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 const AboutUs = () => {
@@ -68,6 +69,7 @@ const AboutUs = () => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <AdminOrderBanner />
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
             {/* Header */}
