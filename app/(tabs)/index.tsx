@@ -13,7 +13,7 @@ import {
   Platform
 } from "react-native"
 import { useFocusEffect } from "@react-navigation/native"
-import { User, ShoppingCart, Star, MapPin } from "lucide-react-native"
+import { User, ShoppingCart, Star, MapPin, Sparkles, TrendingUp } from "lucide-react-native"
 import { useRouter } from "expo-router"
 import { useAuth } from "@/context/AuthContext"
 import { useEffect, useState, useCallback, useRef } from "react"
@@ -30,6 +30,73 @@ import AdminOrderBanner from "../AdminOrderBanner"
 
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 
+// Enhanced Floating Animation Component
+const FloatingElement = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => {
+  const floatAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 3000 + delay,
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 3000 + delay,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [delay]);
+
+  const translateY = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -8],
+  });
+
+  return (
+    <Animated.View style={{ transform: [{ translateY }] }}>
+      {children}
+    </Animated.View>
+  );
+};
+
+// Shimmer Effect Component
+const ShimmerEffect = ({ style }: { style?: any }) => {
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1500,
+        useNativeDriver: true,
+      })
+    );
+    animation.start();
+    return () => animation.stop();
+  }, []);
+
+  const opacity = shimmerAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.3, 0.8, 0.3],
+  });
+
+  return (
+    <Animated.View style={[style, { opacity }]}>
+      <LinearGradient
+        colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={StyleSheet.absoluteFill}
+      />
+    </Animated.View>
+  );
+};
 
 const CookingAnimation = () => {
   const rotateAnim = useRef(new Animated.Value(0)).current
@@ -279,11 +346,25 @@ export default function HomeScreen() {
   const { user, logout } = useAuth()
   const [cartCount, setCartCount] = useState(0)
   const [activeOrder, setActiveOrder] = useState<Order | null>(null)
-  //const [orders, setOrders] = useState<Order[]>([]);
   const notificationSoundRef = useRef<Audio.Sound | null>(null);
   const [neworders, setNewOrders] = useState<any[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const headerAnim = useRef(new Animated.Value(0)).current;
 
+  // Header animation on scroll
+  useEffect(() => {
+    const listener = scrollY.addListener(({ value }) => {
+      const opacity = value > 50 ? 1 : value / 50;
+      Animated.timing(headerAnim, {
+        toValue: opacity,
+        duration: 100,
+        useNativeDriver: false,
+      }).start();
+    });
+
+    return () => scrollY.removeListener(listener);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -301,137 +382,6 @@ export default function HomeScreen() {
       fetchCartCount()
     }, [user]),
   )
-
-  // const soundRef = useRef<Audio.Sound | null>(null);
-  // //Scrollable banner useEffect for showing the orders
-  // useEffect(() => {
-  //   if (!user?.uid) return;
-
-  //   const fetchUserRoleAndListenOrders = async () => {
-  //     const userDocRef = doc(db, "users", user.uid);
-  //     const userDocSnap = await getDoc(userDocRef);
-
-  //     if (userDocSnap.exists()) {
-  //       const userData = userDocSnap.data();
-
-  //       if (userData.role === "admin") {
-  //         setIsAdmin(true); // ✅ Track admin
-  //         const pendingRef = collection(db, "pendingorders");
-
-  //         const unsubscribe = onSnapshot(pendingRef, async (snapshot) => {
-  //           const updatedOrders = snapshot.docs.map((doc) => ({
-  //             id: doc.id,
-  //             ...doc.data(),
-  //           }));
-
-  //           setNewOrders(updatedOrders);
-
-  //           if (updatedOrders.length > 0) {
-  //             if (!soundRef.current) {
-  //               const { sound } = await Audio.Sound.createAsync(
-  //                 require("@/assets/sounds/notification.mp3")
-  //               );
-  //               soundRef.current = sound;
-  //               await sound.playAsync();
-  //               await sound.setIsLoopingAsync(true);
-  //             }
-  //           } else {
-  //             if (soundRef.current) {
-  //               await soundRef.current.stopAsync();
-  //               await soundRef.current.unloadAsync();
-  //               soundRef.current = null;
-  //             }
-  //           }
-  //         });
-
-  //         return () => {
-  //           unsubscribe();
-  //           if (soundRef.current) {
-  //             soundRef.current.unloadAsync();
-  //             soundRef.current = null;
-  //           }
-  //         };
-  //       } else {
-  //         setIsAdmin(false); // ❌ Not admin
-  //       }
-  //     }
-  //   };
-
-  //   fetchUserRoleAndListenOrders();
-  // }, [user?.uid]);
-
-
-  // const handleAccept = async (orderId: string) => {
-  //   try {
-  //     // 1. Find the order in neworders array to get userId
-  //     const order = neworders.find(o => o.id === orderId);
-
-  //     if (!order) {
-  //       console.error('Order not found in neworders array');
-  //       return;
-  //     }
-
-  //     const { userId, orderId: userOrderId } = order;
-
-  //     if (!userId || !userOrderId) {
-  //       console.error('Missing userId or userOrderId in the order');
-  //       return;
-  //     }
-
-  //     // 2. Update the order in user's subcollection
-  //     const userOrderRef = doc(db, 'users', userId, 'orders', userOrderId);
-
-  //     await updateDoc(userOrderRef, {
-  //       deliveryStatus: 'Order Placed',
-  //       orderAccepted: true
-  //     });
-
-  //     // 3. Delete from pendingorders collection
-  //     const pendingOrderRef = doc(db, 'pendingorders', orderId);
-  //     await deleteDoc(pendingOrderRef);
-
-  //     console.log('✅ Order accepted, updated in user orders, and removed from pendingorders');
-  //   } catch (err) {
-  //     console.error('❌ Error accepting order:', err);
-  //   }
-  // };
-
-
-  // const handleDecline = async (orderId: string) => {
-  //   try {
-  //     // 1. Find the order in the local neworders state
-  //     const order = neworders.find(o => o.id === orderId);
-
-  //     if (!order) {
-  //       console.error('Order not found in neworders array');
-  //       return;
-  //     }
-
-  //     const { userId, orderId: userOrderId } = order;
-
-  //     if (!userId || !userOrderId) {
-  //       console.error('Missing userId or orderId in order document');
-  //       return;
-  //     }
-
-  //     // 2. Update the user's actual order document to 'Cancelled'
-  //     const userOrderRef = doc(db, 'users', userId, 'orders', userOrderId);
-
-  //     await updateDoc(userOrderRef, {
-  //       deliveryStatus: 'Cancelled',
-  //       orderAccepted: false
-  //     });
-
-  //     // 3. Delete the order from pendingorders collection
-  //     const pendingOrderRef = doc(db, 'pendingorders', orderId);
-  //     await deleteDoc(pendingOrderRef);
-
-  //     console.log('✅ Order declined and removed from pendingorders');
-
-  //   } catch (err) {
-  //     console.error('❌ Error declining order:', err);
-  //   }
-  // };
 
   useEffect(() => {
     if (!user?.uid) return
@@ -456,7 +406,7 @@ export default function HomeScreen() {
       }
     })
 
-    return () => unsubscribe() // Clean up the listener when component unmounts
+    return () => unsubscribe()
   }, [user])
 
   const slideAnim = useRef(new Animated.Value(-100)).current
@@ -479,28 +429,34 @@ export default function HomeScreen() {
     {
       id: 1,
       name: "Paan",
-      image: "https://t4.ftcdn.net/jpg/01/67/17/97/360_F_167179728_Eou5mvDsorEy0SmCPngudVbzajtsBlaG.jpg", // image of meetha paan
+      image: "https://t4.ftcdn.net/jpg/01/67/17/97/360_F_167179728_Eou5mvDsorEy0SmCPngudVbzajtsBlaG.jpg",
       nav: "paan",
+      gradient: ["#FF6B6B", "#FF8E53"],
+      icon: "🌿"
     },
     {
       id: 2,
       name: "Chaat",
-      image: "https://www.cookwithmanali.com/wp-content/uploads/2022/03/Papdi-Chaat-676x1024.jpg", // image of aloo tikki chaat
+      image: "https://www.cookwithmanali.com/wp-content/uploads/2022/03/Papdi-Chaat-676x1024.jpg",
       nav: "chaat",
+      gradient: ["#4ECDC4", "#44A08D"],
+      icon: "🥗"
     },
     {
       id: 3,
       name: "Beverages",
-      image:
-        "https://images.pexels.com/photos/1194030/pexels-photo-1194030.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", // juice/smoothie
+      image: "https://images.pexels.com/photos/1194030/pexels-photo-1194030.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop",
       nav: "beverages",
+      gradient: ["#667eea", "#764ba2"],
+      icon: "🥤"
     },
     {
       id: 4,
       name: "Others",
-      image:
-        "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop", // salad/street food
-      nav: "",
+      image: "https://st3.depositphotos.com/31273274/36119/i/450/depositphotos_361198124-stock-photo-banner-bitter-chocolate-wooden-board.jpg",
+      nav: "others",
+      gradient: ["#f093fb", "#f5576c"],
+      icon: "🍽️"
     },
   ]
 
@@ -512,7 +468,8 @@ export default function HomeScreen() {
       price: "₹100",
       rating: 4.6,
       image: "https://t4.ftcdn.net/jpg/05/39/35/93/360_F_539359381_LQsJTRIswnrEEK4S9vpsITp3qA2gUD9e.jpg",
-      nav: 'paan'
+      nav: 'paan',
+      badge: "Popular"
     },
     {
       id: 2,
@@ -521,7 +478,8 @@ export default function HomeScreen() {
       price: "₹100",
       rating: 4.4,
       image: "https://www.cookwithmanali.com/wp-content/uploads/2022/03/Papdi-Chaat-676x1024.jpg",
-      nav: 'chaat'
+      nav: 'chaat',
+      badge: "Trending"
     },
   ]
 
@@ -532,7 +490,7 @@ export default function HomeScreen() {
       subtitle: "Traditional flavors, modern twist",
       description: "Experience the rich taste of our handcrafted paans",
       image: "https://t4.ftcdn.net/jpg/01/67/17/97/360_F_167179728_Eou5mvDsorEy0SmCPngudVbzajtsBlaG.jpg",
-      colors: ["#FF6B6B", "#FF8E53"],
+      colors: ["#FF6B6B", "#FF8E53", "#FFB347"],
       buttonText: "Explore Paans",
       nav: "paan",
     },
@@ -542,7 +500,7 @@ export default function HomeScreen() {
       subtitle: "Crispy, tangy, irresistible",
       description: "Savor the authentic street food experience",
       image: "https://www.cookwithmanali.com/wp-content/uploads/2022/03/Papdi-Chaat-676x1024.jpg",
-      colors: ["#4ECDC4", "#44A08D"],
+      colors: ["#4ECDC4", "#44A08D", "#2E8B8B"],
       buttonText: "Order Chaat",
       nav: "chaat",
     },
@@ -550,10 +508,9 @@ export default function HomeScreen() {
       id: 3,
       title: "Special Combo Offer",
       subtitle: "Paan + Chaat = Perfect Match",
-      description: "",
-      image:
-        "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop",
-      colors: ["#667eea", "#764ba2"],
+      description: "Limited time special offer",
+      image: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop",
+      colors: ["#667eea", "#764ba2", "#8E54E9"],
       buttonText: "Explore",
       nav: "paan",
       isOffer: true,
@@ -564,162 +521,205 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5FFF5" />
-
-      {/* <View style={styles.fixedBanner}>
-        {isAdmin && neworders.length > 0 ? (
-          <View style={[styles.bannerCardNotification, { maxHeight: 400 }]}>
-            <ScrollView>
-              {neworders.map((order, index) => (
-                <View key={index} style={styles.card}>
-                  <Text style={styles.title}>New Order #{order.id.slice(-6).toUpperCase()}</Text>
-                  <Text style={[styles.subText, { fontWeight: 'bold' }]}>
-                    Customer: {order.orderName || 'Unknown'}
-                  </Text>
-
-                  <Text style={styles.subText}>Method: {order.deliveryMethod}</Text>
-                  <Text style={styles.subText}>Mobile: {order.orderMobileNumber}</Text>
-                  <Text style={styles.subText}>Total: ₹{order.grandTotal}</Text>
-
-                  <View style={styles.itemList}>
-                    {order.cartItems?.map((item: any, i: number) => (
-                      <Text key={i} style={styles.item}>{item.name} × {item.quantity}</Text>
-                    ))}
-                  </View>
-
-                  <View style={styles.actions}>
-                    <TouchableOpacity onPress={() => handleAccept(order.id)} style={styles.acceptBtn}>
-                      <Text style={styles.btnText}>Accept</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDecline(order.id)} style={styles.declineBtn}>
-                      <Text style={styles.btnText}>Decline</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-        ) : (''
-      )}
-      </View> */}
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      
       <AdminOrderBanner />
 
-      {/* Header */}
-      <View style={styles.header}>
+      {/* Enhanced Header with Gradient and Animation */}
+      <Animated.View style={[styles.header, { backgroundColor: headerAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['rgba(239, 255, 240, 0.95)', 'rgba(239, 255, 240, 1)']
+      })}]}>
+        <LinearGradient
+          colors={['rgba(0, 200, 83, 0.05)', 'rgba(0, 200, 83, 0.02)']}
+          style={StyleSheet.absoluteFill}
+        />
         <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => router.push("/aboutus")}>
-            <Text style={styles.headerTitle}>Laxman's</Text>
+            <View style={styles.logoContainer}>
+              <Text style={styles.headerTitle}>Laxman's</Text>
+              <View style={styles.sparkleContainer}>
+                <Sparkles size={16} color="#00C853" />
+              </View>
+            </View>
           </TouchableOpacity>
           <View style={styles.locationContainer}>
-            <MapPin size={16} color="#666" />
+            <View style={styles.locationIconContainer}>
+              <MapPin size={14} color="#666" />
+            </View>
             <Text style={styles.locationText}>15 C, Sarat Bose Road, Elgin, Kolkata</Text>
           </View>
         </View>
         <View style={styles.headerRight}>
           {user ? (
-            <View>
               <TouchableOpacity style={styles.profileCircle} onPress={() => router.push("/profile")}>
-                <Text style={styles.profileText}>{user?.email?.[0]?.toUpperCase() || "P"}</Text>
+                <LinearGradient
+                  colors={['#FF6B6B', '#FF8E53']}
+                  style={styles.profileGradient}
+                >
+                  <Text style={styles.profileText}>{user?.email?.[0]?.toUpperCase() || "P"}</Text>
+                </LinearGradient>
               </TouchableOpacity>
-            </View>
           ) : (
             <TouchableOpacity style={styles.headerIcon} onPress={() => router.push("/login")}>
-              <User size={24} color="#333" />
+              <View style={styles.iconContainer}>
+                <User size={22} color="#333" />
+              </View>
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={styles.headerIcon} onPress={() => router.push("/cart")}>
-            <ShoppingCart size={24} color="#333" />
-            {cartCount > 0 && (
-              <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>{cartCount}</Text>
+            <TouchableOpacity style={styles.cartIconContainer} onPress={() => router.push("/cart")}>
+              <View style={styles.cartIconBg}>
+                <ShoppingCart size={22} color="#00C853" />
+                {cartCount > 0 && (
+                  <Animated.View style={styles.cartBadge}>
+                    <Text style={styles.cartBadgeText}>{cartCount}</Text>
+                  </Animated.View>
+                )}
               </View>
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
 
-      {/*Food Categories*/}
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
+      <Animated.ScrollView 
+        showsVerticalScrollIndicator={false} 
+        style={styles.scrollView}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+      >
         <AnimatedBanner />
-        {/* Categories */}
+        
+        {/* Enhanced Categories */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Categories</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Categories</Text>
+            <View style={styles.sectionIcon}>
+              <Sparkles size={18} color="#00C853" />
+            </View>
+          </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.categoryItem}
-                onPress={() => router.push(`/${category.nav}` as any)}
-              >
-                <Image source={{ uri: category.image }} style={styles.categoryImage} />
-                <Text style={styles.categoryName}>{category.name}</Text>
-              </TouchableOpacity>
+            {categories.map((category, index) => (
+              <FloatingElement key={category.id} delay={index * 100}>
+                <TouchableOpacity
+                  style={styles.categoryItem}
+                  onPress={() => router.push(`/${category.nav}` as any)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.categoryCard}>
+                    <LinearGradient
+                      colors={category.gradient}
+                      style={styles.categoryGradient}
+                    >
+                      <View style={styles.categoryImageContainer}>
+                        <Image source={{ uri: category.image }} style={styles.categoryImage} />
+                        <View style={styles.categoryOverlay} />
+                        <Text style={styles.categoryEmoji}>{category.icon}</Text>
+                      </View>
+                    </LinearGradient>
+                    <ShimmerEffect style={styles.categoryShimmer} />
+                  </View>
+                  <Text style={styles.categoryName}>{category.name}</Text>
+                </TouchableOpacity>
+              </FloatingElement>
             ))}
           </ScrollView>
         </View>
 
-        {/* Popular Dishes */}
+        {/* Enhanced Popular Dishes */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Popular in Laxman's</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Popular in Laxman's</Text>
+            <View style={styles.trendingBadge}>
+              <TrendingUp size={14} color="#FF6B6B" />
+              <Text style={styles.trendingText}>Hot</Text>
+            </View>
+          </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {popularDishes.map((dish) => (
-              <TouchableOpacity key={dish.id} style={styles.dishCard} onPress={() => router.push(`/${dish.nav}` as any)}>
-                <Image source={{ uri: dish.image }} style={styles.dishImage} />
-                <View style={styles.dishInfo}>
-                  <Text style={styles.dishName}>{dish.name}</Text>
-                  <Text style={styles.dishRestaurant}>{dish.restaurant}</Text>
-                  <View style={styles.dishBottom}>
-                    <Text style={styles.dishPrice}>{dish.price}</Text>
-                    <View style={styles.ratingContainer}>
-                      <Star size={12} color="#FFD700" fill="#FFD700" />
-                      <Text style={styles.ratingText}>{dish.rating}</Text>
+            {popularDishes.map((dish, index) => (
+              <FloatingElement key={dish.id} delay={index * 150}>
+                <TouchableOpacity style={styles.dishCard} onPress={() => router.push(`/${dish.nav}` as any)} activeOpacity={0.9}>
+                  <View style={styles.dishImageContainer}>
+                    <Image source={{ uri: dish.image }} style={styles.dishImage} />
+                    <LinearGradient
+                      colors={['transparent', 'rgba(0,0,0,0.3)']}
+                      style={styles.dishImageOverlay}
+                    />
+                    <View style={styles.dishBadge}>
+                      <Text style={styles.dishBadgeText}>{dish.badge}</Text>
                     </View>
                   </View>
-                </View>
-              </TouchableOpacity>
+                  <View style={styles.dishInfo}>
+                    <Text style={styles.dishName}>{dish.name}</Text>
+                    <Text style={styles.dishRestaurant}>{dish.restaurant}</Text>
+                    <View style={styles.dishBottom}>
+                      <View style={styles.priceContainer}>
+                        <Text style={styles.dishPrice}>{dish.price}</Text>
+                      </View>
+                      <View style={styles.ratingContainer}>
+                        <Star size={12} color="#FFD700" fill="#FFD700" />
+                        <Text style={styles.ratingText}>{dish.rating}</Text>
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              </FloatingElement>
             ))}
           </ScrollView>
         </View>
 
-        {/* Food Banners */}
+        {/* Enhanced Food Banners */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Special for You</Text>
-          {foodBanners.map((banner) => (
-            <TouchableOpacity
-              key={banner.id}
-              style={styles.bannerCard}
-              onPress={() => router.push(`/${banner.nav}` as any)}
-            >
-              <LinearGradient
-                colors={banner.colors}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.bannerGradient}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Special for You</Text>
+            <View style={styles.specialBadge}>
+              <Sparkles size={14} color="#fff" />
+            </View>
+          </View>
+          {foodBanners.map((banner, index) => (
+            <FloatingElement key={banner.id} delay={index * 200}>
+              <TouchableOpacity
+                style={styles.bannerCard}
+                onPress={() => router.push(`/${banner.nav}` as any)}
+                activeOpacity={0.95}
               >
-                <View style={styles.bannerContent}>
-                  <View style={styles.bannerTextSection}>
-                    {/* {banner.isOffer && (
-                      <View style={styles.offerTag}>
-                        <Text style={styles.offerTagText}>SPECIAL OFFER</Text>
+                <LinearGradient
+                  colors={banner.colors}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.bannerGradient}
+                >
+                  <View style={styles.bannerContent}>
+                    <View style={styles.bannerTextSection}>
+                      {banner.isOffer && (
+                        <Animated.View style={styles.offerTag}>
+                          <Sparkles size={10} color="#FFFFFF" />
+                          <Text style={styles.offerTagText}>SPECIAL OFFER</Text>
+                        </Animated.View>
+                      )}
+                      <Text style={styles.bannerTitle}>{banner.title}</Text>
+                      <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
+                      <Text style={styles.bannerDescription}>{banner.description}</Text>
+                      <View style={styles.bannerButton}>
+                        <Text style={styles.bannerButtonText}>{banner.buttonText}</Text>
+                        <Ionicons name="arrow-forward" size={16} color="#FFFFFF" style={{ marginLeft: 8 }} />
                       </View>
-                    )} */}
-                    <Text style={styles.bannerTitle}>{banner.title}</Text>
-                    <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
-                    <Text style={styles.bannerDescription}>{banner.description}</Text>
-                    <TouchableOpacity style={styles.bannerButton}>
-                      <Text style={styles.bannerButtonText}>{banner.buttonText}</Text>
-                      <Ionicons name="arrow-forward" size={16} color="#FFFFFF" style={{ marginLeft: 8 }} />
-                    </TouchableOpacity>
+                    </View>
+                    <View style={styles.bannerImageSection}>
+                      <View style={styles.bannerImageContainer}>
+                        <Image source={{ uri: banner.image }} style={styles.bannerImage} />
+                        <View style={styles.bannerImageGlow} />
+                      </View>
+                    </View>
                   </View>
-                  <View style={styles.bannerImageSection}>
-                    <Image source={{ uri: banner.image }} style={styles.bannerImage} />
-                  </View>
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
+                  <ShimmerEffect style={styles.bannerShimmer} />
+                </LinearGradient>
+              </TouchableOpacity>
+            </FloatingElement>
           ))}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       {activeOrder && (
         <Animated.View
@@ -732,20 +732,30 @@ export default function HomeScreen() {
           ]}
         >
           <TouchableOpacity onPress={() => router.push(`/orderdetails?orderId=${activeOrder.id}`)}>
-            <View style={styles.bannerContent}>
-              <View style={styles.animationContainer}>{isProcessing ? <CookingAnimation /> : <ReadyAnimation />}</View>
+            <LinearGradient
+              colors={isProcessing ? 
+                ['rgba(255, 193, 7, 0.1)', 'rgba(255, 152, 0, 0.1)'] : 
+                ['rgba(76, 175, 80, 0.1)', 'rgba(56, 142, 60, 0.1)']
+              }
+              style={styles.processingGradient}
+            >
+              <View style={styles.bannerContent}>
+                <View style={styles.animationContainer}>
+                  {isProcessing ? <CookingAnimation /> : <ReadyAnimation />}
+                </View>
 
-              <View style={styles.textContainer}>
-                <Text style={styles.processingText}>{activeOrder.deliveryStatus}</Text>
-                <Text style={styles.subText}>
-                  {isProcessing ? "Our chefs are preparing your delicious meal" : "Your order is ready for pickup!"}
-                </Text>
-              </View>
+                <View style={styles.textContainer}>
+                  <Text style={styles.processingText}>{activeOrder.deliveryStatus}</Text>
+                  <Text style={styles.subText}>
+                    {isProcessing ? "Our chefs are preparing your delicious meal" : "Your order is ready for pickup!"}
+                  </Text>
+                </View>
 
-              <View style={styles.pulseIndicator}>
-                <View style={[styles.pulse, isProcessing ? styles.pulseYellow : styles.pulseGreen]} />
+                <View style={styles.pulseIndicator}>
+                  <Animated.View style={[styles.pulse, isProcessing ? styles.pulseYellow : styles.pulseGreen]} />
+                </View>
               </View>
-            </View>
+            </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -756,8 +766,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
-    //paddingTop: topPadding
+    backgroundColor: "#FAFAFA",
     height: height,
   },
   header: {
@@ -766,51 +775,111 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: "#EFFFF0",
     borderBottomWidth: 1,
-    borderBottomColor: "#EFFFF0",
-    paddingTop: 20,
+    borderBottomColor: "rgba(0, 200, 83, 0.1)",
+    paddingTop: 45,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   headerLeft: {
     flex: 1,
   },
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 26,
+    fontWeight: "800",
     color: "#00C853",
+    letterSpacing: 0.5,
+  },
+  sparkleContainer: {
+    marginLeft: 8,
   },
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
+    marginTop: 6,
+  },
+  locationIconContainer: {
+    backgroundColor: "rgba(0, 200, 83, 0.1)",
+    borderRadius: 8,
+    padding: 2,
+    marginRight: 6,
   },
   locationText: {
-    marginLeft: 4,
-    fontSize: 14,
+    fontSize: 13,
     color: "#666",
+    fontWeight: "500",
   },
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
   },
   headerIcon: {
-    marginLeft: 20,
+    marginLeft: 15,
+    position: "relative",
+  },
+  iconContainer: {
+    backgroundColor: "rgba(0, 200, 83, 0.1)",
+    borderRadius: 20,
+    padding: 8,
+  },
+  profileCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 15,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  profileGradient: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  profileText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  cartIconContainer: {
+    position: "relative",
+  },
+  cartIconBg: {
+    backgroundColor: "rgba(0, 200, 83, 0.1)",
+    borderRadius: 20,
+    padding: 8,
     position: "relative",
   },
   cartBadge: {
     position: "absolute",
-    top: -8,
-    right: -8,
-    backgroundColor: "#e74c3c",
-    borderRadius: 10,
-    width: 20,
-    height: 20,
+    top: -6,
+    right: -6,
+    backgroundColor: "#FF6B6B",
+    borderRadius: 12,
+    width: 24,
+    height: 24,
     justifyContent: "center",
     alignItems: "center",
+    elevation: 3,
+    shadowColor: "#FF6B6B",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   cartBadgeText: {
     color: "#fff",
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "bold",
   },
   scrollView: {
@@ -819,12 +888,42 @@ const styles = StyleSheet.create({
   section: {
     marginVertical: 20,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 15,
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "800",
     color: "#333",
+    letterSpacing: 0.3,
+  },
+  sectionIcon: {
+    backgroundColor: "rgba(0, 200, 83, 0.1)",
+    borderRadius: 15,
+    padding: 6,
+  },
+  trendingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 107, 107, 0.1)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  trendingText: {
+    marginLeft: 4,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#FF6B6B",
+  },
+  specialBadge: {
+    backgroundColor: "#FF6B6B",
+    borderRadius: 12,
+    padding: 6,
   },
   categoriesContainer: {
     paddingLeft: 20,
@@ -832,62 +931,77 @@ const styles = StyleSheet.create({
   categoryItem: {
     alignItems: "center",
     marginRight: 20,
-    width: 80,
+    width: 90,
+  },
+  categoryCard: {
+    width: 75,
+    height: 75,
+    borderRadius: 20,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    marginBottom: 10,
+  },
+  categoryGradient: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 20,
+    padding: 2,
+  },
+  categoryImageContainer: {
+    flex: 1,
+    borderRadius: 18,
+    overflow: "hidden",
+    position: "relative",
   },
   categoryImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginBottom: 8,
+    width: "100%",
+    height: "100%",
+  },
+  categoryOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.2)",
+  },
+  categoryEmoji: {
+    position: "absolute",
+    bottom: 4,
+    right: 4,
+    fontSize: 16,
+  },
+  categoryShimmer: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 20,
   },
   categoryName: {
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 13,
+    fontWeight: "700",
     color: "#333",
     textAlign: "center",
+    letterSpacing: 0.2,
   },
 
-  // Food Banner Styles
+  // Enhanced Banner Styles
   bannerCard: {
     marginHorizontal: 20,
-    marginBottom: 16,
-    borderRadius: 16,
+    marginBottom: 20,
+    borderRadius: 20,
     overflow: "hidden",
-    elevation: 6,
+    elevation: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-
-  bannerCardNotification: {
-    marginHorizontal: 20,
-    marginTop: 16,
-    marginBottom: 16,
-    borderRadius: 16,
-    //overflow: "hidden",
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-
-  fixedBanner: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    borderRadius: 16,
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
   },
   bannerGradient: {
-    padding: 20,
-    minHeight: 140,
+    padding: 24,
+    minHeight: 160,
+    position: "relative",
+  },
+  bannerShimmer: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 20,
   },
   bannerContent: {
     flexDirection: "row",
@@ -896,152 +1010,194 @@ const styles = StyleSheet.create({
   },
   bannerTextSection: {
     flex: 1,
-    paddingRight: 16,
+    paddingRight: 20,
   },
   offerTag: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 15,
     alignSelf: "flex-start",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   offerTagText: {
     color: "#FFFFFF",
     fontSize: 10,
     fontWeight: "bold",
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+    marginLeft: 4,
   },
   bannerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "800",
     color: "#FFFFFF",
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: 0.3,
   },
   bannerSubtitle: {
-    fontSize: 14,
-    color: "rgba(255, 255, 255, 0.9)",
-    marginBottom: 6,
-    fontWeight: "500",
+    fontSize: 15,
+    color: "rgba(255, 255, 255, 0.95)",
+    marginBottom: 8,
+    fontWeight: "600",
   },
   bannerDescription: {
-    fontSize: 12,
-    color: "rgba(255, 255, 255, 0.8)",
-    marginBottom: 12,
-    lineHeight: 16,
+    fontSize: 13,
+    color: "rgba(255, 255, 255, 0.85)",
+    marginBottom: 16,
+    lineHeight: 18,
   },
   bannerButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 25,
     alignSelf: "flex-start",
   },
   bannerButtonText: {
     color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
   bannerImageSection: {
-    width: 80,
-    height: 80,
+    width: 90,
+    height: 90,
+  },
+  bannerImageContainer: {
+    width: "100%",
+    height: "100%",
+    position: "relative",
   },
   bannerImage: {
     width: "100%",
     height: "100%",
-    borderRadius: 12,
+    borderRadius: 16,
+  },
+  bannerImageGlow: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 16,
   },
 
+  // Enhanced Dish Card Styles
   dishCard: {
-    width: 160,
+    width: 180,
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     marginLeft: 20,
+    elevation: 6,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    overflow: "hidden",
+  },
+  dishImageContainer: {
+    position: "relative",
+    height: 120,
   },
   dishImage: {
     width: "100%",
-    height: 100,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    height: "100%",
+  },
+  dishImageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  dishBadge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    backgroundColor: "#FF6B6B",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  dishBadgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "bold",
   },
   dishInfo: {
-    padding: 12,
+    padding: 16,
   },
   dishName: {
-    fontSize: 14,
-    fontWeight: "bold",
+    fontSize: 15,
+    fontWeight: "700",
     color: "#333",
     marginBottom: 4,
+    letterSpacing: 0.2,
   },
   dishRestaurant: {
     fontSize: 12,
     color: "#666",
-    marginBottom: 8,
+    marginBottom: 12,
+    fontWeight: "500",
   },
   dishBottom: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
+  priceContainer: {
+    backgroundColor: "rgba(0, 200, 83, 0.1)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
   dishPrice: {
     fontSize: 14,
-    fontWeight: "bold",
-    color: "#e74c3c",
+    fontWeight: "800",
+    color: "#00C853",
   },
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "rgba(255, 215, 0, 0.1)",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   ratingText: {
     marginLeft: 4,
     fontSize: 12,
     color: "#666",
+    fontWeight: "600",
   },
-  profileCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#ddd",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  profileText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
+
+  // Enhanced Processing Banner
   processingBanner: {
     width: LockedWindowDimensions.width - 20,
     marginHorizontal: 10,
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    elevation: 4,
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    elevation: 8,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    paddingBottom: 100
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    paddingBottom: 100,
+    overflow: "hidden",
+  },
+  processingGradient: {
+    borderRadius: 16,
+    padding: 4,
   },
   bannerYellow: {
     backgroundColor: "#FFF8E1",
-    borderLeftWidth: 4,
+    borderLeftWidth: 5,
     borderLeftColor: "#FF9800",
   },
   bannerGreen: {
     backgroundColor: "#E8F5E8",
-    borderLeftWidth: 4,
+    borderLeftWidth: 5,
     borderLeftColor: "#4CAF50",
   },
   animationContainer: {
-    marginRight: 12,
+    marginRight: 16,
   },
   textContainer: {
     flex: 1,
@@ -1049,25 +1205,27 @@ const styles = StyleSheet.create({
   },
   processingText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#333",
     marginBottom: 4,
+    letterSpacing: 0.2,
   },
   subText: {
     fontSize: 12,
     color: "#666",
-    fontWeight: "400",
+    fontWeight: "500",
+    lineHeight: 16,
   },
   pulseIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginLeft: 8,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginLeft: 12,
   },
   pulse: {
     width: "100%",
     height: "100%",
-    borderRadius: 6,
+    borderRadius: 7,
   },
   pulseYellow: {
     backgroundColor: "#FF9800",
@@ -1076,120 +1234,71 @@ const styles = StyleSheet.create({
     backgroundColor: "#4CAF50",
   },
 
-  // Cooking Animation Styles
+  // Animation Styles
   cookingContainer: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
   },
   cookingPan: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: "#FFF3E0",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
     borderColor: "#FF9800",
+    elevation: 2,
+    shadowColor: "#FF9800",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
   },
   steam: {
     position: "absolute",
     width: 3,
-    height: 8,
+    height: 10,
     backgroundColor: "#E0E0E0",
     borderRadius: 2,
     top: 5,
   },
   steam1: {
-    left: 12,
+    left: 14,
   },
   steam2: {
-    left: 18,
+    left: 20,
   },
   steam3: {
-    left: 24,
+    left: 26,
   },
-
   readyContainer: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
   },
   glowCircle: {
     position: "absolute",
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: "rgba(76, 175, 80, 0.2)",
   },
   readyIcon: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    elevation: 2,
+    borderRadius: 18,
+    elevation: 3,
     shadowColor: "#4CAF50",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
-  card: {
-    width: width - 40,
-    margin: 8,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  itemList: {
-    marginVertical: 8,
-    fontWeight: 'bold',
-    color: '#000'
-  },
-  item: {
-    fontSize: 13,
-    color: '#555',
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 12,
-  },
-  acceptBtn: {
-    backgroundColor: '#4CAF50',
-    padding: 10,
-    borderRadius: 8,
-    flex: 1,
-    marginRight: 8,
-    alignItems: 'center',
-  },
-  declineBtn: {
-    backgroundColor: '#e74c3c',
-    padding: 10,
-    borderRadius: 8,
-    flex: 1,
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  btnText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  }
 })

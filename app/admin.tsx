@@ -88,7 +88,7 @@ const AdminDashboard = () => {
     const notificationSoundRef = useRef<Audio.Sound | null>(null);
     const [neworders, setNewOrders] = useState<any[]>([]);
 
-    const categories = ['paan', 'chaat', 'beverages'];
+    const categories = ['paan', 'chaat', 'beverages', 'others'];
     const orderStatuses = [
         { value: 'Order Placed', label: 'Order Placed', color: '#2196F3' },
         { value: 'Processing Your Order', label: 'Processing', color: '#FF9800' },

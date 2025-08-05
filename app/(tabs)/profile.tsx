@@ -119,24 +119,64 @@ export default function ProfileScreen() {
             <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
                 {/* User Info Card */}
                 <View style={styles.userCard}>
-                    <View style={styles.userInfo}>
-                        <Text style={styles.userName}>Hi, {userData.name}!</Text>
-                        <Text style={styles.userRole}>{userData.role.toUpperCase()}</Text>
-                        <View style={styles.userDetail}>
-                            <Mail size={16} color="#666" />
-                            <Text style={styles.userDetailText}>{userData.email}</Text>
+                    {/* <View style={styles.profileHeader}>
+                        <View style={styles.avatarContainer}>
+                            <View style={styles.avatarPlaceholder}>
+                                <User size={32} color="#fff" />
+                            </View>
                         </View>
-                        <View style={styles.userDetail}>
-                            <Phone size={16} color="#666" />
-                            <Text style={styles.userDetailText}>{userData.phone}</Text>
+                        <View style={styles.userMainInfo}>
+                            <Text style={styles.userName}>Hi, {userData.name}!</Text>
+                            <View style={styles.roleBadge}>
+                                <Text style={styles.userRole}>{userData.role.toUpperCase()}</Text>
+                            </View>
                         </View>
-                        <View style={styles.userDetail}>
-                            <MapPin size={16} color="#666" />
-                            <Text style={styles.userDetailText}>{userData.address}</Text>
-                        </View>
-                        <View style={styles.userDetail}>
-                            <Clock size={16} color="#666" />
-                            <Text style={styles.userDetailText}>Member since {formattedDate}</Text>
+                    </View> */}
+                    
+                    <View style={styles.divider} />
+                    
+                    <View style={styles.userDetailsSection}>
+                        <Text style={styles.detailsSectionTitle}>Contact Information</Text>
+                        <View style={styles.userDetailsGrid}>
+                            <View style={styles.userDetailRow}>
+                                <View style={styles.detailIconContainer}>
+                                    <Mail size={18} color="#4A90E2" />
+                                </View>
+                                <View style={styles.detailContent}>
+                                    <Text style={styles.detailLabel}>Email</Text>
+                                    <Text style={styles.detailValue}>{userData.email}</Text>
+                                </View>
+                            </View>
+                            
+                            <View style={styles.userDetailRow}>
+                                <View style={styles.detailIconContainer}>
+                                    <Phone size={18} color="#4A90E2" />
+                                </View>
+                                <View style={styles.detailContent}>
+                                    <Text style={styles.detailLabel}>Phone</Text>
+                                    <Text style={styles.detailValue}>{userData.phone}</Text>
+                                </View>
+                            </View>
+                            
+                            <View style={styles.userDetailRow}>
+                                <View style={styles.detailIconContainer}>
+                                    <MapPin size={18} color="#4A90E2" />
+                                </View>
+                                <View style={styles.detailContent}>
+                                    <Text style={styles.detailLabel}>Location</Text>
+                                    <Text style={styles.detailValue}>{userData.address}</Text>
+                                </View>
+                            </View>
+                            
+                            <View style={styles.userDetailRow}>
+                                <View style={styles.detailIconContainer}>
+                                    <Clock size={18} color="#4A90E2" />
+                                </View>
+                                <View style={styles.detailContent}>
+                                    <Text style={styles.detailLabel}>Member Since</Text>
+                                    <Text style={styles.detailValue}>{formattedDate}</Text>
+                                </View>
+                            </View>
                         </View>
                     </View>
                 </View>
@@ -229,7 +269,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#f8f9fa',
        //paddingTop: topPadding
     },
     centerContainer: {
@@ -245,7 +285,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 15,
         borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
+        borderBottomColor: '#e9ecef',
         backgroundColor: '#fff',
     },
 
@@ -259,7 +299,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#2c3e50',
         textAlign: 'center',
         flex: 1,
     },
@@ -318,13 +358,111 @@ const styles = StyleSheet.create({
     userCard: {
         backgroundColor: '#fff',
         margin: 20,
-        borderRadius: 16,
-        padding: 20,
+        borderRadius: 20,
+        padding: 0,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: '#f0f0f0',
+    },
+    profileHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 24,
+        backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20
+    },
+    avatarContainer: {
+        marginRight: 16,
+    },
+    avatarPlaceholder: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 3,
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    userMainInfo: {
+        flex: 1,
+    },
+    userName: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginBottom: 8,
+    },
+    roleBadge: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        alignSelf: 'flex-start',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    userRole: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#fff',
+        letterSpacing: 1,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#e9ecef',
+        marginHorizontal: 24,
+    },
+    userDetailsSection: {
+        padding: 24,
+    },
+    detailsSectionTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#2c3e50',
+        marginBottom: 20,
+        letterSpacing: 0.5,
+    },
+    userDetailsGrid: {
+        gap: 16,
+    },
+    userDetailRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 8,
+    },
+    detailIconContainer: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#f8f9fa',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+        borderWidth: 1,
+        borderColor: '#e9ecef',
+    },
+    detailContent: {
+        flex: 1,
+    },
+    detailLabel: {
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#6c757d',
+        marginBottom: 2,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    detailValue: {
+        fontSize: 15,
+        fontWeight: '500',
+        color: '#2c3e50',
+        lineHeight: 20,
     },
     avatar: {
         width: 80,
@@ -335,18 +473,6 @@ const styles = StyleSheet.create({
     },
     userInfo: {
         alignItems: 'center',
-    },
-    userName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 12,
-    },
-    userRole: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#00C853',
-        marginBottom: 12
     },
     userDetail: {
         flexDirection: 'row',
@@ -444,10 +570,17 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: '#f8f9fa',
-        borderRadius: 12,
+        backgroundColor: '#fff',
+        borderRadius: 16,
         padding: 16,
         marginBottom: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+        elevation: 2,
+        borderWidth: 1,
+        borderColor: '#f0f0f0',
     },
     menuItemLeft: {
         flexDirection: 'row',
@@ -455,10 +588,10 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     menuIconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#fff',
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#ffeaea',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
@@ -469,25 +602,25 @@ const styles = StyleSheet.create({
     menuItemTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#333',
+        color: '#2c3e50',
         marginBottom: 2,
     },
     menuItemSubtitle: {
-        fontSize: 14,
-        color: '#666',
+        fontSize: 13,
+        color: '#6c757d',
     },
     logoutButton: {
         backgroundColor: '#e74c3c',
-        borderRadius: 12,
-        padding: 16,
+        borderRadius: 16,
+        padding: 18,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowColor: '#e74c3c',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
     logoutButtonText: {
         color: '#fff',
@@ -500,17 +633,18 @@ const styles = StyleSheet.create({
         paddingVertical: 24,
         paddingHorizontal: 20,
         borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
+        borderTopColor: '#e9ecef',
         marginTop: 20,
+        backgroundColor: '#fff',
     },
     copyrightText: {
         fontSize: 14,
-        color: '#666',
+        color: '#6c757d',
         fontWeight: '600',
         marginBottom: 4,
     },
     copyrightSubtext: {
         fontSize: 12,
-        color: '#999',
+        color: '#adb5bd',
     },
 });
