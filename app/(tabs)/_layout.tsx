@@ -4,7 +4,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, StyleSheet, Platform } from 'react-native';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+import { Dimensions } from 'react-native';
 
+const { width, height } = Dimensions.get('window');
+console.log(height);
 export default function TabLayout() {
   useFrameworkReady();
   const insets = useSafeAreaInsets();
@@ -21,7 +24,7 @@ export default function TabLayout() {
             right: 20,
             bottom: insets.bottom + 8,
             backgroundColor: '#fff',
-            height: 60,
+            height: height * 0.07,
             borderTopWidth: 0,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
