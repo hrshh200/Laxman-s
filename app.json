@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Laxman's",
-    "owner": "harshsharma088",
+    "owner": "harshsharma0881",
     "slug": "laxmans",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -69,7 +69,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "336191be-1011-40d4-bd9f-9c0b098b8504"
+        "projectId": "b321ab07-d83c-4fbc-8e8f-f1d0fdf5744a"
       }
     }
   }
