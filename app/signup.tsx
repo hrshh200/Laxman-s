@@ -16,6 +16,7 @@ import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from '
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/firebase';
 import Loader from '@/components/Loader';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 
@@ -25,6 +26,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [mobile, setMobile] = useState('');
   const [loading, setLoading] = useState(false);
+  const [secure, setSecure] = useState(true);
 
   const showToast = (msg: string) => {
     if (Platform.OS === 'android') {
@@ -112,14 +114,20 @@ export default function SignUpScreen() {
         style={styles.input}
       />
 
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor="#999"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-      />
+      <View style={styles.inputShowContainer}>
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#999"
+          secureTextEntry={secure}
+          value={password}
+          onChangeText={setPassword}
+          style={styles.input}
+        />
+
+        <TouchableOpacity onPress={() => setSecure(!secure)} style={styles.icon}>
+          <MaterialIcons name={secure ? 'visibility-off' : 'visibility'} size={24} color="#888" />
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity style={styles.button} onPress={SigningUpCustomer}>
         <Text style={styles.buttonText}>Sign Up</Text>
@@ -186,4 +194,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 14,
   },
+  icon: {
+        position: 'absolute',
+        right: 10,
+        top: '30%',
+    },
+    inputShowContainer: {
+        position: 'relative',
+        width: '100%',
+        marginBottom: 16,
+    }
 });
