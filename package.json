@@ -50,6 +50,7 @@
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
     "react-native-animatable": "^1.4.0",
+    "react-native-firebase": "^5.6.0",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-maps": "1.20.1",
     "react-native-otp-inputs": "^7.4.0",

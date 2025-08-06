@@ -1,26 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ToastAndroid, Alert, Platform, TouchableWithoutFeedback, KeyboardAvoidingView, Keyboard, StatusBar, ScrollView } from 'react-native';
+import {
+    View,
+    Text,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    Image,
+    ToastAndroid,
+    Alert,
+    Platform,
+    TouchableWithoutFeedback,
+    KeyboardAvoidingView,
+    Keyboard,
+    StatusBar,
+    ScrollView,
+} from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../context/AuthContext';
 import Loader from '@/components/Loader';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { auth } from '@/firebase/firebase';
+import {
+    GoogleAuthProvider,
+    signInWithCredential,
+    signInWithEmailAndPassword,
+    signOut,
+} from 'firebase/auth';
 import { MaterialIcons } from '@expo/vector-icons';
-import * as AuthSession from 'expo-auth-session';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db } from '@/firebase/firebase';
+import { useLocalSearchParams } from 'expo-router';
 
 
 WebBrowser.maybeCompleteAuthSession();
 
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
+
 export default function LoginScreen() {
-    const { user, login, logout } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [secure, setSecure] = useState(true);
+    const params = useLocalSearchParams();
+    const signupName = typeof params.name === 'string' ? params.name : '';
+    const signupMobile = typeof params.mobile === 'string' ? params.mobile : '';
+
 
 
     const [request, response, promptAsync] = Google.useAuthRequest({
@@ -30,8 +54,6 @@ export default function LoginScreen() {
         redirectUri: 'https://auth.expo.io/@harshsharma088/Laxmans',
     });
 
-
-
     const showToast = (msg: string) => {
         if (Platform.OS === 'android') {
             ToastAndroid.show(msg, ToastAndroid.SHORT);
@@ -39,21 +61,15 @@ export default function LoginScreen() {
             Alert.alert(msg);
         }
     };
-    // useEffect(() => {
-    //     console.log("Google request:", request);
-    //     console.log("Google response:", response);
-    // }, [request, response]);
-
-
 
     useEffect(() => {
         if (response?.type === 'success') {
             const { id_token } = response.params;
-
             const credential = GoogleAuthProvider.credential(id_token);
             signInWithCredential(auth, credential)
                 .then(() => {
                     showToast('Logged in with Google');
+                    router.replace('/');
                 })
                 .catch((error) => {
                     console.error('Google Sign-In error', error);
@@ -62,123 +78,134 @@ export default function LoginScreen() {
         }
     }, [response]);
 
-
-    useEffect(() => {
-        if (user) {
-            // User already logged in
-            router.replace('/'); // Redirect to home/dashboard
-            // showToast('Logged In Successfully!');
-        }
-    }, [user]);
-
     const handleLogin = async () => {
         if (!email || !password) {
-            return alert('Please enter email and password');
+            return Alert.alert('Missing Fields', 'Please enter email and password');
         }
 
         try {
             setLoading(true);
-            await login(email, password); // ✅ Wait for login to finish
-        } catch (error) {
+
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Check email verification
+            if (!user.emailVerified) {
+                await signOut(auth);
+                return Alert.alert('Email Not Verified', 'Please verify your email before logging in.');
+            }
+
+            // Check if user Firestore document exists
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (!userDocSnap.exists()) {
+                // If not found, create the user document
+                await setDoc(userDocRef, {
+                    uid: user.uid,
+                    name: signupName,
+                    email: user.email,
+                    mobile: signupMobile,
+                    createdAt: new Date().toISOString(),
+                    role: '',
+                });
+
+            }
+
+
+            showToast('Login successful');
+            router.replace('/');
+        } catch (error: any) {
             console.error('Login error:', error);
-            alert('Login failed');
+            Alert.alert('Login Failed', error.message || 'Something went wrong');
         } finally {
-            setLoading(false); // ✅ Hide loader after login attempt finishes
+            setLoading(false);
         }
     };
 
-
-    if (loading) {
-        return <Loader />;
-    }
-
+    if (loading) return <Loader />;
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <SafeAreaView style={styles.container}>
                 <KeyboardAvoidingView
+                    style={styles.flex}
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                     keyboardVerticalOffset={topPadding}
-                    style={{ flex: 1 }}
                 >
                     <ScrollView
-                        contentContainerStyle={{ flexGrow: 1 }}
+                        style={styles.flex}
+                        contentContainerStyle={styles.scrollContainer}
                         keyboardShouldPersistTaps="handled"
                     >
-                        <View style={{ flex: 1 }}>
-                            {/* Top Image */}
-                            <Image
-                                source={{ uri: 'https://lh3.googleusercontent.com/p/AF1QipMDN1-i1QSAtpp4Gnjgsu3WYJrAkz-oUqpSAhLu=s1360-w1360-h1020' }}
-                                style={styles.image}
-                                resizeMode="cover"
+                        <Image
+                            source={{
+                                uri: 'https://lh3.googleusercontent.com/p/AF1QipMDN1-i1QSAtpp4Gnjgsu3WYJrAkz-oUqpSAhLu=s1360-w1360-h1020',
+                            }}
+                            style={styles.image}
+                            resizeMode="cover"
+                        />
+
+                        <View style={styles.formContainer}>
+                            <Text style={styles.title}>Welcome to Laxman’s</Text>
+                            <Text style={styles.subtitle}>Login to explore your favorite food</Text>
+
+                            <TextInput
+                                placeholder="Email"
+                                placeholderTextColor="#888"
+                                style={styles.input}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                value={email}
+                                onChangeText={setEmail}
                             />
 
-                            {/* Form Section */}
-                            <View style={styles.formContainer}>
-                                <Text style={styles.title}>Welcome to Laxman’s Refreshment Shop</Text>
-                                <Text style={styles.subtitle}>Login to explore your favorite food</Text>
-
+                            <View style={styles.inputShowContainer}>
                                 <TextInput
-                                    placeholder="Email"
+                                    placeholder="Password"
                                     placeholderTextColor="#888"
                                     style={styles.input}
-                                    keyboardType="email-address"
-                                    value={email}
-                                    onChangeText={setEmail}
+                                    secureTextEntry={secure}
+                                    value={password}
+                                    onChangeText={setPassword}
                                 />
-
-                                <View style={styles.inputShowContainer}>
-                                    <TextInput
-                                        placeholder="Password"
-                                        placeholderTextColor="#888"
-                                        style={styles.input}
-                                        secureTextEntry={secure}
-                                        value={password}
-                                        onChangeText={setPassword}
-                                    />
-                                    <TouchableOpacity onPress={() => setSecure(!secure)} style={styles.icon}>
-                                        <MaterialIcons
-                                            name={secure ? 'visibility-off' : 'visibility'}
-                                            size={24}
-                                            color="#888"
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-
-                                <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                                    <Text style={styles.loginButtonText}>Login</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity onPress={() => router.push('/')}>
-                                    <Text style={styles.backText}>← Back to Home</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity onPress={() => router.push('/forgotpassword')}>
-                                    <Text style={styles.registerText}>Forgot Password?</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity onPress={() => router.push('/signup')}>
-                                    <Text style={styles.registerText}>Don’t have an account? Sign up</Text>
+                                <TouchableOpacity onPress={() => setSecure(!secure)} style={styles.icon}>
+                                    <MaterialIcons name={secure ? 'visibility-off' : 'visibility'} size={24} color="#888" />
                                 </TouchableOpacity>
                             </View>
+
+                            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                                <Text style={styles.loginButtonText}>Login</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={() => router.push('/')}>
+                                <Text style={styles.backText}>← Back to Home</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={() => router.push('/forgotpassword')}>
+                                <Text style={styles.registerText}>Forgot Password?</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={() => router.push('/signup')}>
+                                <Text style={styles.registerText}>Don’t have an account? Sign up</Text>
+                            </TouchableOpacity>
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
         </TouchableWithoutFeedback>
     );
-
-
 }
 
-// ...styles remain same
-
-
+// Styles
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        paddingTop: topPadding
+        paddingTop: topPadding,
+    },
+    flex: {
+        flex: 1,
     },
     image: {
         width: '100%',
@@ -187,7 +214,6 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 40,
     },
     formContainer: {
-        flex: 1,
         paddingHorizontal: 24,
         paddingTop: 20,
     },
@@ -250,5 +276,8 @@ const styles = StyleSheet.create({
         position: 'relative',
         width: '100%',
         marginBottom: 16,
-    }
+    },
+    scrollContainer: {
+        paddingBottom: 20,
+    },
 });

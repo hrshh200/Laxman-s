@@ -27,6 +27,7 @@ import { LockedWindowDimensions } from '@/utils/dimensions';
 const { width, height } = LockedWindowDimensions;
 import { Audio } from 'expo-av';
 import AdminOrderBanner from "../AdminOrderBanner"
+import NotificationBanner from "../GoogleReviewBanner"
 
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 
@@ -522,8 +523,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-      
-      <AdminOrderBanner />
+      <NotificationBanner />
 
       {/* Enhanced Header with Gradient and Animation */}
       <Animated.View style={[styles.header, { backgroundColor: headerAnim.interpolate({
@@ -819,6 +819,7 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 8
   },
   headerIcon: {
     marginLeft: 15,
@@ -927,6 +928,7 @@ const styles = StyleSheet.create({
   },
   categoriesContainer: {
     paddingLeft: 20,
+
   },
   categoryItem: {
     alignItems: "center",

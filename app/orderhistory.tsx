@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView, StatusBar, ScrollView, Platform } from 'react-native';
-import { collection, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, Timestamp, doc, setDoc, getDoc, query, where } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { router } from 'expo-router';
@@ -124,6 +124,54 @@ const OrderHistory = () => {
         };
     }
   };
+
+  const addItemstoCart = async (order: Order) => {
+    if (!user?.uid) return;
+
+    try {
+      const cartRef = collection(db, 'users', user.uid, 'cart');
+
+      for (const item of order.cartItems) {
+        // Check if item already exists (based on name)
+        const existingQuery = query(cartRef, where('name', '==', item.name));
+        const existingSnap = await getDocs(existingQuery);
+
+        if (!existingSnap.empty) {
+          // Item already exists, update its quantity and total
+          const existingDoc = existingSnap.docs[0];
+          const existingData = existingDoc.data();
+          const updatedQuantity = existingData.quantity + item.quantity;
+          const updatedTotal = (item.price ?? 0) * updatedQuantity;
+
+          await setDoc(existingDoc.ref, {
+            ...existingData,
+            quantity: updatedQuantity,
+            total: updatedTotal,
+            updatedAt: new Date()
+          });
+        } else {
+          // Item doesn't exist, create a new one
+          const itemRef = doc(cartRef); // Auto ID
+          const unitPrice = item.price ?? 0;
+          await setDoc(itemRef, {
+            name: item.name,
+            quantity: item.quantity,
+            price: unitPrice,
+            image: item.image || '',
+            isVeg: item.isVeg || false,
+            createdAt: new Date(),
+            total: unitPrice * item.quantity
+          });
+        }
+      }
+
+      router.push('/cart');
+      console.log('Reordered items added to cart.');
+    } catch (error) {
+      console.error('Error adding items to cart:', error);
+    }
+  };
+
 
   const formatDate = (timestamp: Timestamp) => {
     const date = timestamp?.toDate();
@@ -301,7 +349,7 @@ const OrderHistory = () => {
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.reorderButton} onPress={() => router.push('/')}>
+          <TouchableOpacity style={styles.reorderButton} onPress={() => addItemstoCart(item)}>
             <Text style={styles.reorderButtonText}>Reorder</Text>
           </TouchableOpacity>
 

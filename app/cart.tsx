@@ -23,8 +23,8 @@ export default function Cart() {
     const { user } = useAuth();
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [deliveryMethod, setDeliveryMethod] = useState('');
-    const [selectedTime, setSelectedTime] = useState('');
+    const [deliveryMethod, setDeliveryMethod] = useState('pickup');
+    const [selectedTime, setSelectedTime] = useState('20 mins');
     // Calculate totals
     const subtotal = cartItems.reduce((sum, item) => sum + item.total, 0);
     const deliveryFee = subtotal > 500 ? 0 : 40;

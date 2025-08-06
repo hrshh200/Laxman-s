@@ -1,16 +1,40 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { ActivityIndicator, View, StyleSheet, Dimensions, Platform } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import AdminOrderBanner from './AdminOrderBanner';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/firebase/firebase';
+
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 function AppLayout() {
-  const { loading } = useAuth();
+   const { loading, user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingRole, setCheckingRole] = useState(true);
   useFrameworkReady();
+
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (user?.uid) {
+        try {
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          const userData = userDocSnap.data();
+          setIsAdmin(userData?.role === 'admin');
+        } catch (error) {
+          console.error('Error checking admin role:', error);
+        }
+      }
+      setCheckingRole(false);
+    };
+
+    checkAdminRole();
+  }, [user?.uid]);
 
   if (loading) {
     return (
@@ -24,6 +48,7 @@ function AppLayout() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {isAdmin && <AdminOrderBanner />}
       <Stack screenOptions={{ 
         headerShown: false,
         contentStyle: { backgroundColor: '#fff' },

@@ -80,7 +80,6 @@ export default function ProfileScreen() {
         return (
             <SafeAreaView style={styles.container}>
                 <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-                <AdminOrderBanner />
                 <View style={styles.centerContainer}>
                     <View style={styles.unknownUserCard}>
                         <User size={64} color="#e74c3c" />
@@ -100,7 +99,6 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <AdminOrderBanner />
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
             {/* Header */}

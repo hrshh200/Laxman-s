@@ -9,15 +9,16 @@ import {
   Platform,
   Alert,
   ScrollView,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import { router } from 'expo-router';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/firebase';
 import Loader from '@/components/Loader';
 
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
+
 export default function SignUpScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -40,49 +41,46 @@ export default function SignUpScreen() {
 
     try {
       setLoading(true);
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
 
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        name,
-        email,
-        password,
-        mobile,
-        createdAt: new Date().toISOString(),
-        role: "",
+      // 1. Create the user account
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const createdUser = userCredential.user;
+
+      // 2. Send email verification
+      await sendEmailVerification(createdUser);
+      await signOut(auth);
+
+      // 3. Save user data in Firestore
+      // await setDoc(doc(db, 'users', createdUser.uid), {
+      //   uid: createdUser.uid,
+      //   name,
+      //   email,
+      //   password,
+      //   mobile,
+      //   createdAt: new Date().toISOString(),
+      //   role: '',
+      // });
+
+      // 4. Show toast and redirect to login
+      showToast('Verification email sent. (Check Spam Folder) Please verify and then log in.');
+      router.replace({
+        pathname: '/login',
+        params: {
+          name,
+          mobile,
+        },
       });
 
-      showToast('Profile Created!');
-      router.replace('/login');
+
     } catch (error: any) {
-      // Firebase Auth error codes
-      switch (error.code) {
-        case 'auth/email-already-in-use':
-          showToast('This email is already registered.');
-          break;
-        case 'auth/invalid-email':
-          showToast('Invalid email address.');
-          break;
-        case 'auth/weak-password':
-          showToast('Password should be at least 6 characters.');
-          break;
-        case 'auth/network-request-failed':
-          showToast('Network error. Please check your connection.');
-          break;
-        default:
-          console.error('Signup error:', error);
-          showToast('Signup failed. Please try again.');
-      }
+      console.error('Signup error:', error);
+      showToast(error.message || 'Signup failed.');
     } finally {
       setLoading(false);
     }
   };
 
-
-  if (loading) {
-    return <Loader />;
-  }
+  if (loading) return <Loader />;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

@@ -9,80 +9,85 @@ import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
 import AdminOrderBanner from './AdminOrderBanner';
 
+
 const { width, height } = Dimensions.get('window');
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 
 // Enhanced Floating Animation Component
 const FloatingElement = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => {
-  const floatAnim = useRef(new Animated.Value(0)).current;
+    const floatAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: 1,
-          duration: 3000 + delay,
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 3000 + delay,
-          useNativeDriver: true,
-        }),
-      ])
+    useEffect(() => {
+        const animation = Animated.loop(
+            Animated.sequence([
+                Animated.timing(floatAnim, {
+                    toValue: 1,
+                    duration: 3000 + delay,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(floatAnim, {
+                    toValue: 0,
+                    duration: 3000 + delay,
+                    useNativeDriver: true,
+                }),
+            ])
+        );
+        animation.start();
+        return () => animation.stop();
+    }, [delay]);
+
+    const translateY = floatAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, -8],
+    });
+
+    return (
+        <Animated.View style={{ transform: [{ translateY }] }}>
+            {children}
+        </Animated.View>
     );
-    animation.start();
-    return () => animation.stop();
-  }, [delay]);
-
-  const translateY = floatAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -8],
-  });
-
-  return (
-    <Animated.View style={{ transform: [{ translateY }] }}>
-      {children}
-    </Animated.View>
-  );
 };
 
 // Shimmer Effect Component
 const ShimmerEffect = ({ style }: { style?: any }) => {
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
+    const shimmerAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(shimmerAnim, {
-        toValue: 1,
-        duration: 1500,
-        useNativeDriver: true,
-      })
+    useEffect(() => {
+        const animation = Animated.loop(
+            Animated.timing(shimmerAnim, {
+                toValue: 1,
+                duration: 1500,
+                useNativeDriver: true,
+            })
+        );
+        animation.start();
+        return () => animation.stop();
+    }, []);
+
+    const opacity = shimmerAnim.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: [0.3, 0.8, 0.3],
+    });
+
+    return (
+        <Animated.View style={[style, { opacity }]}>
+            <LinearGradient
+                colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+            />
+        </Animated.View>
     );
-    animation.start();
-    return () => animation.stop();
-  }, []);
-
-  const opacity = shimmerAnim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0.3, 0.8, 0.3],
-  });
-
-  return (
-    <Animated.View style={[style, { opacity }]}>
-      <LinearGradient
-        colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={StyleSheet.absoluteFill}
-      />
-    </Animated.View>
-  );
 };
 
 const AboutUs = () => {
     const scrollY = useRef(new Animated.Value(0)).current;
     const headerAnim = useRef(new Animated.Value(0)).current;
+
+    const handleOpenYouTube = () => {
+        Linking.openURL('https://www.youtube.com/watch?v=oHEo5Bkw2dk');
+    };
 
     // Header animation on scroll
     useEffect(() => {
@@ -128,11 +133,10 @@ const AboutUs = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <AdminOrderBanner />
             <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
 
             {/* Enhanced Header with Gradient and Animation */}
-            <Animated.View style={[styles.header, { 
+            <Animated.View style={[styles.header, {
                 backgroundColor: headerAnim.interpolate({
                     inputRange: [0, 1],
                     outputRange: ['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 1)']
@@ -142,13 +146,11 @@ const AboutUs = () => {
                     colors={['rgba(0, 200, 83, 0.05)', 'rgba(0, 200, 83, 0.02)']}
                     style={StyleSheet.absoluteFill}
                 />
-                <FloatingElement>
-                    <TouchableOpacity onPress={() => router.push('/')} style={styles.backButton}>
-                        <View style={styles.backButtonContainer}>
-                            <ArrowLeft size={24} color="#00C853" />
-                        </View>
-                    </TouchableOpacity>
-                </FloatingElement>
+                <TouchableOpacity onPress={() => router.push('/')} style={styles.backButton}>
+                    <View style={styles.backButtonContainer}>
+                        <ArrowLeft size={24} color="#00C853" />
+                    </View>
+                </TouchableOpacity>
                 <View style={styles.headerTitleContainer}>
                     <Text style={styles.headerTitle}>About Us</Text>
                     <View style={styles.headerSparkle}>
@@ -158,8 +160,8 @@ const AboutUs = () => {
                 <View style={styles.placeholder} />
             </Animated.View>
 
-            <Animated.ScrollView 
-                showsVerticalScrollIndicator={false} 
+            <Animated.ScrollView
+                showsVerticalScrollIndicator={false}
                 style={styles.scrollView}
                 onScroll={Animated.event(
                     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -177,16 +179,14 @@ const AboutUs = () => {
                         colors={['transparent', 'rgba(0,0,0,0.7)']}
                         style={styles.heroOverlay}
                     >
-                        <FloatingElement delay={200}>
-                            <View style={styles.heroContent}>
-                                <Text style={styles.heroTitle}>Laxman's</Text>
-                                <Text style={styles.heroSubtitle}>Delivering Happiness Since 1976</Text>
-                                <View style={styles.heroBadge}>
-                                    <Award size={16} color="#FFD700" />
-                                    <Text style={styles.heroBadgeText}>Legacy of Excellence</Text>
-                                </View>
+                        <View style={styles.heroContent}>
+                            <Text style={styles.heroTitle}>Laxman's</Text>
+                            <Text style={styles.heroSubtitle}>Delivering Happiness Since 1976</Text>
+                            <View style={styles.heroBadge}>
+                                <Award size={16} color="#FFD700" />
+                                <Text style={styles.heroBadgeText}>Legacy of Excellence</Text>
                             </View>
-                        </FloatingElement>
+                        </View>
                     </LinearGradient>
                     <ShimmerEffect style={styles.heroShimmer} />
                 </View>
@@ -290,28 +290,17 @@ const AboutUs = () => {
                             <Ionicons name="play-circle" size={16} color="#fff" />
                         </View>
                     </View>
-                    <FloatingElement delay={300}>
-                        <View style={styles.videoCard}>
-                            <LinearGradient
-                                colors={['#667eea', '#764ba2']}
-                                style={styles.videoCardGradient}
-                            >
-                                <View style={styles.videoContainer}>
-                                    <WebView
-                                        style={styles.video}
-                                        javaScriptEnabled={true}
-                                        domStorageEnabled={true}
-                                        source={{ uri: 'https://www.youtube.com/embed/oHEo5Bkw2dk' }}
-                                    />
-                                </View>
-                                <View style={styles.videoOverlay}>
-                                    <Text style={styles.videoTitle}>Watch Our Story</Text>
-                                    <Text style={styles.videoSubtitle}>Decades of tradition and taste</Text>
-                                </View>
-                            </LinearGradient>
-                            <ShimmerEffect style={styles.videoShimmer} />
-                        </View>
-                    </FloatingElement>
+                    <View style={styles.videocontainer}>
+                        <WebView
+                            source={{ uri: 'https://www.youtube.com/watch?v=oHEo5Bkw2dk' }}
+                            style={styles.webview}
+                            javaScriptEnabled
+                            domStorageEnabled
+                            allowsFullscreenVideo
+                            allowsInlineMediaPlayback
+                            mediaPlaybackRequiresUserAction={false}
+                        />
+                    </View>
                 </View>
 
                 {/* Enhanced Footer Section */}
@@ -686,12 +675,13 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     video: {
-        flex: 1,
+        width: '100%',
+        height: 200,
+        borderRadius: 12,
+        overflow: 'hidden',
     },
     videoOverlay: {
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-        alignItems: 'center',
+        pointerEvents: 'none',
     },
     videoTitle: {
         fontSize: 20,
@@ -742,4 +732,15 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         textAlign: 'center',
     },
+    webview: {
+        flex: 1,
+    },
+    videocontainer: {
+        width: '100%',
+        height: (width * 9) / 16, // Aspect ratio 16:9
+        backgroundColor: '#000',
+        overflow: 'hidden',
+        borderRadius: 12,
+        marginVertical: 16,
+    }
 });

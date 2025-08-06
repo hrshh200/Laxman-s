@@ -98,7 +98,6 @@ const Search: React.FC = () => {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <AdminOrderBanner />
       <View style={styles.searchContainer}>
         <View style={styles.headerContainer}>
           <TouchableOpacity onPress={() => router.push('/')} style={styles.backButton}>
@@ -152,7 +151,7 @@ const Search: React.FC = () => {
       <FlatList
         data={results}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.resultsList}
+        contentContainerStyle={[styles.resultsList, { paddingBottom: 100 }]}
         renderItem={({ item }) => (
           <View style={styles.card}>
             {item.image && (

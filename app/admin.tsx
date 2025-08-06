@@ -886,7 +886,6 @@ const AdminDashboard = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <AdminOrderBanner />
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
             {/* <View>
                 {neworders.length > 0 ? (
