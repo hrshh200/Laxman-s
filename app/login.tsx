@@ -1,35 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    Image,
-    ToastAndroid,
-    Alert,
-    Platform,
-    TouchableWithoutFeedback,
-    KeyboardAvoidingView,
-    Keyboard,
-    StatusBar,
-    ScrollView,
-} from 'react-native';
-import { router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Loader from '@/components/Loader';
-import * as WebBrowser from 'expo-web-browser';
+import { auth, db } from '@/firebase/firebase';
+import { MaterialIcons } from '@expo/vector-icons';
 import * as Google from 'expo-auth-session/providers/google';
+import { router, useLocalSearchParams } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import {
     GoogleAuthProvider,
     signInWithCredential,
     signInWithEmailAndPassword,
     signOut,
 } from 'firebase/auth';
-import { MaterialIcons } from '@expo/vector-icons';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/firebase/firebase';
-import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    Alert,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    ToastAndroid,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 WebBrowser.maybeCompleteAuthSession();
