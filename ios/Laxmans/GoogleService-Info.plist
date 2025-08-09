@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>54124910689-e00o9a6f6cabdlud9ett9j19k3b1tm79.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.54124910689-e00o9a6f6cabdlud9ett9j19k3b1tm79</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>54124910689-lto28ot0ts6drd9r2db85vlaict3di07.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCt8ekDE6V3PT25gSiFV6xxTl2iDU99tIw</string>
+	<key>GCM_SENDER_ID</key>
+	<string>54124910689</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.harsh.ioslaxmanapp</string>
+	<key>PROJECT_ID</key>
+	<string>laxman-s</string>
+	<key>STORAGE_BUCKET</key>
+	<string>laxman-s.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:54124910689:ios:63e33d6de162e6f57eb220</string>
+</dict>
+</plist>

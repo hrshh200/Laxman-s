@@ -5,28 +5,27 @@ import * as Google from 'expo-auth-session/providers/google';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import {
-    GoogleAuthProvider,
-    signInWithCredential,
-    signInWithEmailAndPassword,
-    signOut,
+  GoogleAuthProvider,
+  signInWithCredential,
+  signInWithEmailAndPassword
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    ToastAndroid,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Alert,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  ToastAndroid,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -78,49 +77,43 @@ export default function LoginScreen() {
     }, [response]);
 
     const handleLogin = async () => {
-        if (!email || !password) {
-            return Alert.alert('Missing Fields', 'Please enter email and password');
-        }
+  if (!email || !password) {
+    return Alert.alert('Missing Fields', 'Please enter email and password');
+  }
 
-        try {
-            setLoading(true);
+  try {
+    setLoading(true);
 
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-            // Check email verification
-            if (!user.emailVerified) {
-                await signOut(auth);
-                return Alert.alert('Email Not Verified', 'Please verify your email before logging in.');
-            }
+    // Check if Firestore user doc exists
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDocSnap = await getDoc(userDocRef);
 
-            // Check if user Firestore document exists
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDocSnap = await getDoc(userDocRef);
+    if (!userDocSnap.exists()) {
+      // Create user doc if not found
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        name: signupName || '',
+        email: user.email,
+        mobile: signupMobile || '',
+        createdAt: new Date().toISOString(),
+        role: '',
+      });
+    }
 
-            if (!userDocSnap.exists()) {
-                // If not found, create the user document
-                await setDoc(userDocRef, {
-                    uid: user.uid,
-                    name: signupName,
-                    email: user.email,
-                    mobile: signupMobile,
-                    createdAt: new Date().toISOString(),
-                    role: '',
-                });
+    showToast('Login successful');
+    router.replace('/');
 
-            }
+  } catch (error: any) {
+    console.error('Login error:', error);
+    Alert.alert('Login Failed', error.message || 'Something went wrong');
+  } finally {
+    setLoading(false);
+  }
+};
 
-
-            showToast('Login successful');
-            router.replace('/');
-        } catch (error: any) {
-            console.error('Login error:', error);
-            Alert.alert('Login Failed', error.message || 'Something went wrong');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     if (loading) return <Loader />;
 

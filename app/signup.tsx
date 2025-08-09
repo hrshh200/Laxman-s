@@ -1,22 +1,22 @@
+import Loader from '@/components/Loader';
+import { auth, db } from '@/firebase/firebase';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ToastAndroid,
-  Platform,
   Alert,
+  Platform,
   ScrollView,
   StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  ToastAndroid,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { router } from 'expo-router';
-import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/firebase/firebase';
-import Loader from '@/components/Loader';
-import { MaterialIcons } from '@expo/vector-icons';
 
 const topPadding = Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 20;
 
@@ -36,51 +36,40 @@ export default function SignUpScreen() {
     }
   };
 
-  const SigningUpCustomer = async () => {
-    if (!name || !email || !password || !mobile) {
-      return showToast('Please fill all fields');
-    }
+ const SigningUpCustomer = async () => {
+  if (!name || !email || !password || !mobile) {
+    return showToast('Please fill all fields');
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      // 1. Create the user account
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const createdUser = userCredential.user;
+    // 1. Create the user account
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const createdUser = userCredential.user;
 
-      // 2. Send email verification
-      await sendEmailVerification(createdUser);
-      await signOut(auth);
+    // 2. Save user data in Firestore
+    await setDoc(doc(db, 'users', createdUser.uid), {
+      uid: createdUser.uid,
+      name,
+      email,
+      mobile,
+      createdAt: new Date().toISOString(),
+      role: '',
+    });
 
-      // 3. Save user data in Firestore
-      // await setDoc(doc(db, 'users', createdUser.uid), {
-      //   uid: createdUser.uid,
-      //   name,
-      //   email,
-      //   password,
-      //   mobile,
-      //   createdAt: new Date().toISOString(),
-      //   role: '',
-      // });
+    // 3. Show success and redirect
+    showToast('Account created successfully');
+    router.replace('/');
 
-      // 4. Show toast and redirect to login
-      showToast('Verification email sent. (Check Spam Folder) Please verify and then log in.');
-      router.replace({
-        pathname: '/login',
-        params: {
-          name,
-          mobile,
-        },
-      });
+  } catch (error: any) {
+    console.error('Signup error:', error);
+    showToast(error.message || 'Signup failed.');
+  } finally {
+    setLoading(false);
+  }
+};
 
-
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      showToast(error.message || 'Signup failed.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) return <Loader />;
 
